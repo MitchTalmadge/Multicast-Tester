@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 23
+    compileSdkVersion 22
     buildToolsVersion "23.0.0"
 
     defaultConfig {
         applicationId "net.liveforcode.multicasttester"
         minSdkVersion 22
-        targetSdkVersion 23
+        targetSdkVersion 22
         versionCode 1
         versionName "1.0"
     }
@@ -20,5 +20,6 @@ android {
 }
 
 dependencies {
+    compile "com.android.support:appcompat-v7:22.0.0"
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }
