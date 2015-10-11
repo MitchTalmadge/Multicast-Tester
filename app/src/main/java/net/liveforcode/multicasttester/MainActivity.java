@@ -1,6 +1,7 @@
 package net.liveforcode.multicasttester;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
@@ -81,7 +82,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void startListening() {
-        if (!this.multicastIPField.getText().toString().isEmpty() && !this.multicastPortField.getText().toString().isEmpty()) {
+        if (validateInputFields()) {
             setWifiLockAcquired(true);
 
             this.multicastListenerThread = new MulticastListenerThread(this, this.consoleView, getMulticastIP(), getMulticastPort());
@@ -118,7 +119,7 @@ public class MainActivity extends ActionBarActivity {
 
     private void setWifiLockAcquired(boolean acquired) {
         if (acquired) {
-            if (wifiLock != null)
+            if (wifiLock != null && wifiLock.isHeld())
                 wifiLock.release();
 
             WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
@@ -127,7 +128,7 @@ public class MainActivity extends ActionBarActivity {
                 wifiLock.acquire();
             }
         } else {
-            if (wifiLock != null)
+            if (wifiLock != null && wifiLock.isHeld())
                 wifiLock.release();
         }
     }
@@ -136,6 +137,49 @@ public class MainActivity extends ActionBarActivity {
         ((Button) findViewById(R.id.startListeningButton)).setText((isListening) ? R.string.stop_listening : R.string.start_listening);
         findViewById(R.id.clearConsoleButton).setEnabled(isListening);
         findViewById(R.id.sendMessageButton).setEnabled(isListening);
+    }
+
+    private boolean validateInputFields() {
+        //Validate IP
+        if (multicastIPField.getText().toString().isEmpty()) {
+            outputErrorToConsole("Error: Multicast IP is Empty!");
+            return false;
+        } else {
+            String[] splitIP = multicastIPField.getText().toString().split("\\.");
+            if (splitIP.length != 4) {
+                outputErrorToConsole("Error: Multicast IP must contain 4 segments, separated by decimals.\n" +
+                        "For example: xxx.xxx.xxx.xxx (Where 'xxx' represents a segment)");
+                return false;
+            }
+            for (String segment : splitIP) {
+                try {
+                    int intSegment = Integer.parseInt(segment);
+                    if (intSegment > 255) {
+                        outputErrorToConsole("Error: Multicast IP segments range from 0 to 255. Invalid segment: " + segment);
+                        return false;
+                    }
+                } catch (NumberFormatException e) {
+                    outputErrorToConsole("Error: Multicast IP must contain only decimals and numbers.");
+                    return false;
+                }
+            }
+        }
+
+        //Validate Port
+        try {
+            if (multicastPortField.getText().toString().isEmpty()) {
+                outputErrorToConsole("Error: Multicast Port is Empty!");
+                return false;
+            } else if (Integer.parseInt(multicastPortField.getText().toString()) > 65535) {
+                outputErrorToConsole("Error: Multicast Port must be between 0 and 65535.");
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            outputErrorToConsole("Error: Multicast Port may only contain numbers.");
+            return false;
+        }
+
+        return true; //Everything checks out if we got this far. Okay to continue.
     }
 
     public String getMulticastIP() {
@@ -153,6 +197,13 @@ public class MainActivity extends ActionBarActivity {
     private void clearConsole() {
         log("Clearing Console");
         this.consoleView.setText("");
+        this.consoleView.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+    }
+
+    private void outputErrorToConsole(String errorMessage) {
+        clearConsole();
+        this.consoleView.setTextColor(Color.RED);
+        this.consoleView.setText(errorMessage);
     }
 
     public void log(String message) {

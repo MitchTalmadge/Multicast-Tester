@@ -53,6 +53,7 @@ public class MulticastListenerThread extends Thread {
             this.multicastSocket = new MulticastSocket(multicastPort);
             multicastSocket.setNetworkInterface(networkInterface);
             multicastSocket.joinGroup(InetAddress.getByName(multicastIP));
+            //TODO: java.io.IOException: Not a multicast group: /1.2.3.4 (Output error)
             multicastSocket.setTimeToLive(2);
             multicastSocket.setSoTimeout(100);
 

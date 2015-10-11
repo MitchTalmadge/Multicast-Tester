@@ -30,7 +30,7 @@
             android:ems="10"
             android:hint="@string/multicast_port_hint"
             android:inputType="number"
-            android:maxLength="6" />
+            android:maxLength="5" />
 
     </LinearLayout>
 
@@ -56,7 +56,8 @@
         <TextView
             android:id="@+id/consoleTextView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimaryDark"/>
 
     </ScrollView>
 
