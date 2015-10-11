@@ -42,12 +42,12 @@ public class MulticastListenerThread extends Thread {
             WifiManager wifiManager = (WifiManager) activity.getSystemService(Context.WIFI_SERVICE);
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
             int wifiIPInt = wifiInfo.getIpAddress();
-            byte[] wifiIPByte = new byte[] {
+            byte[] wifiIPByte = new byte[]{
                     (byte) (wifiIPInt & 0xff),
                     (byte) (wifiIPInt >> 8 & 0xff),
                     (byte) (wifiIPInt >> 16 & 0xff),
                     (byte) (wifiIPInt >> 24 & 0xff)};
-            InetAddress inetAddress = InetAddress.getByAddress(wifiIPByte);
+            final InetAddress inetAddress = InetAddress.getByAddress(wifiIPByte);
             NetworkInterface networkInterface = NetworkInterface.getByInetAddress(inetAddress);
 
             this.multicastSocket = new MulticastSocket(multicastPort);
@@ -55,30 +55,30 @@ public class MulticastListenerThread extends Thread {
             multicastSocket.joinGroup(InetAddress.getByName(multicastIP));
             multicastSocket.setTimeToLive(2);
             multicastSocket.setSoTimeout(100);
+
+            while (running.get()) {
+                packet.setData(new byte[512]);
+
+                try {
+                    multicastSocket.receive(packet);
+                } catch (IOException ignored) {
+                    continue;
+                }
+
+                final String data = new String(packet.getData()).trim();
+
+                this.handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        consoleView.append("[" + ((inetAddress.getHostAddress().equals(packet.getAddress().getHostAddress())) ? "You" : packet.getAddress().getHostAddress()) + "] " + data + "\n");
+                    }
+                });
+            }
+            this.multicastSocket.close();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        while (running.get()) {
-            packet.setData(new byte[512]);
-
-            try {
-                multicastSocket.receive(packet);
-            } catch (IOException ignored) {
-                continue;
-            }
-
-            final String data = new String(packet.getData()).trim();
-
-            this.handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    consoleView.append("[" + packet.getAddress() + "] " + data + "\n");
-                }
-            });
-        }
-        this.multicastSocket.close();
-
     }
 
     public void stopRunning() {

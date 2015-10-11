@@ -1,6 +1,5 @@
 package net.liveforcode.multicasttester;
 
-import android.app.Activity;
 import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -25,6 +24,7 @@ public class MainActivity extends ActionBarActivity {
     private boolean isListening = false;
     private MulticastListenerThread multicastListenerThread;
     private MulticastSenderThread multicastSenderThread;
+    private WifiManager.MulticastLock wifiLock;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,11 +35,6 @@ public class MainActivity extends ActionBarActivity {
         actionBar.setIcon(R.mipmap.ic_launcher);
 
         setContentView(R.layout.activity_main);
-        WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        if (wifi != null) {
-            WifiManager.MulticastLock lock = wifi.createMulticastLock("multicast-tester");
-            lock.acquire();
-        }
     }
 
     @Override
@@ -54,11 +49,9 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (this.multicastListenerThread != null)
-            this.multicastListenerThread.stopRunning();
-        if (this.multicastSenderThread != null)
-            this.multicastSenderThread.interrupt();
-        isListening = false;
+        if (isListening)
+            stopListening();
+        stopThreads();
     }
 
     @Override
@@ -70,44 +63,79 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
         return super.onOptionsItemSelected(item);
     }
 
     public void onButton(View view) {
         if (view.getId() == R.id.startListeningButton) {
             if (this.isListening) {
-                if (this.multicastListenerThread != null)
-                    this.multicastListenerThread.stopRunning();
-                isListening = false;
-                ((Button) findViewById(R.id.startListeningButton)).setText(R.string.start_listening);
-                findViewById(R.id.clearConsoleButton).setEnabled(false);
-                findViewById(R.id.sendMessageButton).setEnabled(false);
-                this.clearConsole();
+                stopListening();
             } else {
-                if (!this.multicastIPField.getText().toString().isEmpty() && !this.multicastPortField.getText().toString().isEmpty()) {
-
-                    this.multicastListenerThread = new MulticastListenerThread(this, this.consoleView, getMulticastIP(), getMulticastPort());
-                    multicastListenerThread.start();
-                    isListening = true;
-                    ((Button) findViewById(R.id.startListeningButton)).setText(R.string.stop_listening);
-                    findViewById(R.id.clearConsoleButton).setEnabled(true);
-                    findViewById(R.id.sendMessageButton).setEnabled(true);
-                    this.clearConsole();
-                }
+                startListening();
             }
         } else if (view.getId() == R.id.clearConsoleButton) {
             this.clearConsole();
         } else if (view.getId() == R.id.sendMessageButton) {
-            if (this.isListening) {
-                this.multicastSenderThread = new MulticastSenderThread(this, getMessageToSend(), getMulticastIP(), getMulticastPort());
-                multicastSenderThread.start();
-            }
+            sendMulticastMessage(getMessageToSend());
         }
+    }
+
+    private void startListening() {
+        if (!this.multicastIPField.getText().toString().isEmpty() && !this.multicastPortField.getText().toString().isEmpty()) {
+            setWifiLockAcquired(true);
+
+            this.multicastListenerThread = new MulticastListenerThread(this, this.consoleView, getMulticastIP(), getMulticastPort());
+            multicastListenerThread.start();
+
+            isListening = true;
+            updateButtonStates();
+            this.clearConsole();
+        }
+    }
+
+    private void stopListening() {
+        isListening = false;
+        updateButtonStates();
+
+        stopThreads();
+        setWifiLockAcquired(false);
+        clearConsole();
+    }
+
+    private void sendMulticastMessage(String message) {
+        if (this.isListening) {
+            this.multicastSenderThread = new MulticastSenderThread(this, message, getMulticastIP(), getMulticastPort());
+            multicastSenderThread.start();
+        }
+    }
+
+    private void stopThreads() {
+        if (this.multicastListenerThread != null)
+            this.multicastListenerThread.stopRunning();
+        if (this.multicastSenderThread != null)
+            this.multicastSenderThread.interrupt();
+    }
+
+    private void setWifiLockAcquired(boolean acquired) {
+        if (acquired) {
+            if (wifiLock != null)
+                wifiLock.release();
+
+            WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+            if (wifi != null) {
+                this.wifiLock = wifi.createMulticastLock("MulticastTester");
+                wifiLock.acquire();
+            }
+        } else {
+            if (wifiLock != null)
+                wifiLock.release();
+        }
+    }
+
+    private void updateButtonStates() {
+        ((Button) findViewById(R.id.startListeningButton)).setText((isListening) ? R.string.stop_listening : R.string.start_listening);
+        findViewById(R.id.clearConsoleButton).setEnabled(isListening);
+        findViewById(R.id.sendMessageButton).setEnabled(isListening);
     }
 
     public String getMulticastIP() {
@@ -128,7 +156,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void log(String message) {
-        Logger.getLogger("multicast-tester").info(message);
+        Logger.getLogger("MulticastTester").info(message);
     }
 
 }
