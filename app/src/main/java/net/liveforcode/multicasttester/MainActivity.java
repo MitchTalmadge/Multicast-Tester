@@ -85,7 +85,7 @@ public class MainActivity extends ActionBarActivity {
         if (validateInputFields()) {
             setWifiLockAcquired(true);
 
-            this.multicastListenerThread = new MulticastListenerThread(this, this.consoleView, getMulticastIP(), getMulticastPort());
+            this.multicastListenerThread = new MulticastListenerThread(this, getMulticastIP(), getMulticastPort(), this.consoleView);
             multicastListenerThread.start();
 
             isListening = true;
@@ -105,7 +105,7 @@ public class MainActivity extends ActionBarActivity {
 
     private void sendMulticastMessage(String message) {
         if (this.isListening) {
-            this.multicastSenderThread = new MulticastSenderThread(this, message, getMulticastIP(), getMulticastPort());
+            this.multicastSenderThread = new MulticastSenderThread(this, getMulticastIP(), getMulticastPort(), message);
             multicastSenderThread.start();
         }
     }
@@ -147,15 +147,23 @@ public class MainActivity extends ActionBarActivity {
         } else {
             String[] splitIP = multicastIPField.getText().toString().split("\\.");
             if (splitIP.length != 4) {
-                outputErrorToConsole("Error: Multicast IP must contain 4 segments, separated by decimals.\n" +
-                        "For example: xxx.xxx.xxx.xxx (Where 'xxx' represents a segment)");
+                outputErrorToConsole("Error: Please enter an IP Address in this format: xxx.xxx.xxx.xxx\n" +
+                        "Each 'xxx' segment may range from 0 to 255.");
                 return false;
             }
-            for (String segment : splitIP) {
+            for (int i = 0; i < splitIP.length; i++) {
                 try {
-                    int intSegment = Integer.parseInt(segment);
+                    int intSegment = Integer.parseInt(splitIP[i]);
+                    if (i == 0 && (intSegment < 224 || intSegment > 239)) {
+                        outputErrorToConsole("Error: Multicast IPs may only range from:\n" +
+                                "224.0.0.0\n" +
+                                "to\n" +
+                                "239.255.255.255");
+                        return false;
+                    }
                     if (intSegment > 255) {
-                        outputErrorToConsole("Error: Multicast IP segments range from 0 to 255. Invalid segment: " + segment);
+                        outputErrorToConsole("Error: Please enter an IP Address in this format: xxx.xxx.xxx.xxx\n" +
+                                "Each 'xxx' segment may range from 0 to 255.");
                         return false;
                     }
                 } catch (NumberFormatException e) {
@@ -200,7 +208,7 @@ public class MainActivity extends ActionBarActivity {
         this.consoleView.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
     }
 
-    private void outputErrorToConsole(String errorMessage) {
+    public void outputErrorToConsole(String errorMessage) {
         clearConsole();
         this.consoleView.setTextColor(Color.RED);
         this.consoleView.setText(errorMessage);

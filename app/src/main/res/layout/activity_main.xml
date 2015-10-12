@@ -44,20 +44,21 @@
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="@string/console" />
+        android:text="@string/console"
+        android:textSize="18sp"/>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:scrollbars="vertical"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:scrollbars="vertical">
 
         <TextView
             android:id="@+id/consoleTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/colorPrimaryDark"/>
+            android:textColor="@color/colorPrimaryDark" />
 
     </ScrollView>
 
