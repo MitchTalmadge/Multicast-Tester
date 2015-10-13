@@ -3,96 +3,107 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity">
 
+    <include
+        android:id="@+id/app_bar"
+        layout="@layout/app_bar" />
+
     <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:weightSum="2">
-
-        <EditText
-            android:id="@+id/multicastIP"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="@string/multicast_ip_hint"
-            android:maxLength="15"
-            android:inputType="number"
-            android:digits="0,1,2,3,4,5,6,7,8,9,."/>
-
-        <EditText
-            android:id="@+id/multicastPort"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ems="10"
-            android:hint="@string/multicast_port_hint"
-            android:inputType="number"
-            android:maxLength="5" />
-
-    </LinearLayout>
-
-    <Button
-        android:id="@+id/startListeningButton"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:onClick="onButton"
-        android:text="@string/start_listening" />
-
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/console"
-        android:textSize="18sp"/>
-
-    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:fillViewport="true"
-        android:scrollbars="vertical">
+        android:layout_height="match_parent"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:weightSum="2">
+
+            <EditText
+                android:id="@+id/multicastIP"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:digits="0,1,2,3,4,5,6,7,8,9,."
+                android:hint="@string/multicast_ip_hint"
+                android:inputType="number"
+                android:maxLength="15" />
+
+            <EditText
+                android:id="@+id/multicastPort"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:hint="@string/multicast_port_hint"
+                android:inputType="number"
+                android:maxLength="5" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/startListeningButton"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onButton"
+            android:text="@string/start_listening" />
 
         <TextView
-            android:id="@+id/consoleTextView"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/console"
+            android:textSize="18sp" />
+
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/colorPrimaryDark" />
-
-    </ScrollView>
-
-    <EditText
-        android:id="@+id/messageToSend"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/message_to_send"
-        android:maxLength="32" />
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:weightSum="2">
-
-        <Button
-            android:id="@+id/clearConsoleButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:layout_weight="1"
-            android:enabled="false"
-            android:onClick="onButton"
-            android:text="@string/clear_console" />
+            android:fillViewport="true"
+            android:scrollbars="vertical">
 
-        <Button
-            android:id="@+id/sendMessageButton"
-            android:layout_width="0dp"
+            <TextView
+                android:id="@+id/consoleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorPrimaryDark" />
+
+        </ScrollView>
+
+        <EditText
+            android:id="@+id/messageToSend"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:enabled="false"
-            android:onClick="onButton"
-            android:text="@string/send_message" />
+            android:hint="@string/message_to_send"
+            android:maxLength="32" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/clearConsoleButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:onClick="onButton"
+                android:text="@string/clear_console" />
+
+            <Button
+                android:id="@+id/sendMessageButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:onClick="onButton"
+                android:text="@string/send_message" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

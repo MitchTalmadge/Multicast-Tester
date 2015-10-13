@@ -4,8 +4,8 @@ import android.content.Context;
 import android.graphics.Color;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,12 +15,14 @@ import android.widget.TextView;
 
 import java.util.logging.Logger;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends AppCompatActivity {
 
     private EditText multicastIPField;
     private EditText multicastPortField;
     private TextView consoleView;
     private EditText messageToSendField;
+
+    private Toolbar toolbar;
 
     private boolean isListening = false;
     private MulticastListenerThread multicastListenerThread;
@@ -30,12 +32,12 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayShowHomeEnabled(true);
-        actionBar.setIcon(R.mipmap.ic_launcher);
-
         setContentView(R.layout.activity_main);
+
+        this.toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        toolbar.setLogo(R.mipmap.ic_launcher);
     }
 
     @Override
