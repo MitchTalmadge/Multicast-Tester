@@ -1,7 +1,9 @@
 package net.liveforcode.multicasttester;
 
 import android.content.Context;
+import android.content.IntentFilter;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -12,6 +14,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import net.liveforcode.multicasttester.receivers.WifiMonitoringReceiver;
 
 import java.util.logging.Logger;
 
@@ -28,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
     private MulticastListenerThread multicastListenerThread;
     private MulticastSenderThread multicastSenderThread;
     private WifiManager.MulticastLock wifiLock;
+
+    private WifiMonitoringReceiver wifiMonitoringReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +53,15 @@ public class MainActivity extends AppCompatActivity {
         this.multicastPortField = (EditText) findViewById(R.id.multicastPort);
         this.consoleView = (TextView) findViewById(R.id.consoleTextView);
         this.messageToSendField = (EditText) findViewById(R.id.messageToSend);
+
+        setWifiMonitorRegistered(true);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        setWifiMonitorRegistered(false);
     }
 
     @Override
@@ -55,6 +70,20 @@ public class MainActivity extends AppCompatActivity {
         if (isListening)
             stopListening();
         stopThreads();
+    }
+
+    private void setWifiMonitorRegistered(boolean registered) {
+        if (registered) {
+            if (this.wifiMonitoringReceiver != null)
+                unregisterReceiver(this.wifiMonitoringReceiver);
+            this.wifiMonitoringReceiver = new WifiMonitoringReceiver(this);
+            registerReceiver(this.wifiMonitoringReceiver, new IntentFilter("android.net.wifi.STATE_CHANGE"));
+        } else {
+            if (this.wifiMonitoringReceiver != null) {
+                unregisterReceiver(this.wifiMonitoringReceiver);
+                this.wifiMonitoringReceiver = null;
+            }
+        }
     }
 
     @Override
@@ -84,28 +113,38 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startListening() {
-        if (validateInputFields()) {
-            setWifiLockAcquired(true);
+        if (!isListening) {
+            ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+            if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected()) {
+                if (validateInputFields()) {
+                    setWifiLockAcquired(true);
 
-            this.multicastListenerThread = new MulticastListenerThread(this, getMulticastIP(), getMulticastPort(), this.consoleView);
-            multicastListenerThread.start();
+                    this.multicastListenerThread = new MulticastListenerThread(this, getMulticastIP(), getMulticastPort(), this.consoleView);
+                    multicastListenerThread.start();
 
-            isListening = true;
-            updateButtonStates();
-            this.clearConsole();
+                    isListening = true;
+                    updateButtonStates();
+                    this.clearConsole();
+                }
+            } else {
+                outputErrorToConsole("Error: You are not connected to a WiFi network!");
+            }
         }
     }
 
     private void stopListening() {
-        isListening = false;
-        updateButtonStates();
+        if (isListening) {
+            isListening = false;
+            updateButtonStates();
 
-        stopThreads();
-        setWifiLockAcquired(false);
-        clearConsole();
+            stopThreads();
+            setWifiLockAcquired(false);
+            clearConsole();
+        }
     }
 
     private void sendMulticastMessage(String message) {
+        this.log("Sending Message! "+message);
         if (this.isListening) {
             this.multicastSenderThread = new MulticastSenderThread(this, getMulticastIP(), getMulticastPort(), message);
             multicastSenderThread.start();
@@ -220,4 +259,10 @@ public class MainActivity extends AppCompatActivity {
         Logger.getLogger("MulticastTester").info(message);
     }
 
+    public void onWifiDisconnected() {
+        if (isListening) {
+            stopListening();
+            outputErrorToConsole("Error: WiFi has been disconnected. Listening has stopped.");
+        }
+    }
 }

@@ -34,7 +34,10 @@ public class MulticastListenerThread extends MulticastThread {
                 continue;
             }
 
+
             final String data = new String(packet.getData()).trim();
+
+            activity.log("Received! "+data);
 
             final String consoleMessage = "[" + ((getLocalIP().equals(packet.getAddress().getHostAddress())) ? "You" : packet.getAddress().getHostAddress()) + "] " + data + "\n";
 

@@ -45,6 +45,7 @@ public class MulticastThread extends Thread {
             this.multicastSocket = new MulticastSocket(multicastPort);
             multicastSocket.setNetworkInterface(networkInterface);
             multicastSocket.joinGroup(InetAddress.getByName(multicastIP));
+            multicastSocket.setSoTimeout(100);
             multicastSocket.setTimeToLive(2);
         } catch (IOException e) {
             e.printStackTrace();
