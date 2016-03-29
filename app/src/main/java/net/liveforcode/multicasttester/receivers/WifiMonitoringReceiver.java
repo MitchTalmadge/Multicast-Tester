@@ -1,11 +1,11 @@
-package com.mitchtalmadge.multicasttester.receivers;
+package net.liveforcode.multicasttester.receivers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 
-import com.mitchtalmadge.multicasttester.MainActivity;
+import net.liveforcode.multicasttester.MainActivity;
 
 public class WifiMonitoringReceiver extends BroadcastReceiver {
     private MainActivity mainActivity;

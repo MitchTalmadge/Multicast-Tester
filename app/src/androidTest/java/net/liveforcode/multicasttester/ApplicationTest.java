@@ -1,4 +1,4 @@
-package com.mitchtalmadge.multicasttester;
+package net.liveforcode.multicasttester;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

@@ -1,4 +1,4 @@
-package com.mitchtalmadge.multicasttester;
+package net.liveforcode.multicasttester;
 
 import android.content.Context;
 import android.content.IntentFilter;
@@ -15,7 +15,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.mitchtalmadge.multicasttester.receivers.WifiMonitoringReceiver;
+import net.liveforcode.multicasttester.receivers.WifiMonitoringReceiver;
 
 import java.util.logging.Logger;
 
