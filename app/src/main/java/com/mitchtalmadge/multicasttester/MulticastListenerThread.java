@@ -1,4 +1,4 @@
-package net.liveforcode.multicasttester;
+package com.mitchtalmadge.multicasttester;
 
 import android.os.Handler;
 import android.widget.TextView;
@@ -9,13 +9,11 @@ import java.net.DatagramPacket;
 public class MulticastListenerThread extends MulticastThread {
 
     private TextView consoleView;
-    private final Handler handler;
     private DatagramPacket packet;
 
     public MulticastListenerThread(MainActivity activity, String multicastIP, int multicastPort, TextView consoleView) {
-        super("MulticastListenerThread", activity, multicastIP, multicastPort);
+        super("MulticastListenerThread", activity, multicastIP, multicastPort, new Handler());
         this.consoleView = consoleView;
-        this.handler = new Handler();
     }
 
 
@@ -29,15 +27,17 @@ public class MulticastListenerThread extends MulticastThread {
             packet.setData(new byte[1024]);
 
             try {
-                multicastSocket.receive(packet);
+                if (multicastSocket != null)
+                    multicastSocket.receive(packet);
+                else
+                    break;
             } catch (IOException ignored) {
                 continue;
             }
 
-
             final String data = new String(packet.getData()).trim();
 
-            activity.log("Received! "+data);
+            activity.log("Received! " + data);
 
             final String consoleMessage = "[" + ((getLocalIP().equals(packet.getAddress().getHostAddress())) ? "You" : packet.getAddress().getHostAddress()) + "] " + data + "\n";
 
@@ -48,6 +48,7 @@ public class MulticastListenerThread extends MulticastThread {
                 }
             });
         }
-        this.multicastSocket.close();
+        if (multicastSocket != null)
+            this.multicastSocket.close();
     }
 }

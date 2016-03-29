@@ -1,4 +1,6 @@
-package net.liveforcode.multicasttester;
+package com.mitchtalmadge.multicasttester;
+
+import android.os.Handler;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -9,7 +11,7 @@ public class MulticastSenderThread extends MulticastThread {
     private String messageToSend;
 
     public MulticastSenderThread(MainActivity activity, String multicastIP, int multicastPort, String messageToSend) {
-        super("MulticastSenderThread", activity, multicastIP, multicastPort);
+        super("MulticastSenderThread", activity, multicastIP, multicastPort, new Handler());
         this.messageToSend = messageToSend;
     }
 

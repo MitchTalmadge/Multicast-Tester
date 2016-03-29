@@ -1,4 +1,4 @@
-package net.liveforcode.multicasttester;
+package com.mitchtalmadge.multicasttester;
 
 import android.content.Context;
 import android.content.IntentFilter;
@@ -15,7 +15,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import net.liveforcode.multicasttester.receivers.WifiMonitoringReceiver;
+import com.mitchtalmadge.multicasttester.receivers.WifiMonitoringReceiver;
 
 import java.util.logging.Logger;
 
@@ -132,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void stopListening() {
+    void stopListening() {
         if (isListening) {
             isListening = false;
             updateButtonStates();
@@ -252,7 +252,7 @@ public class MainActivity extends AppCompatActivity {
     public void outputErrorToConsole(String errorMessage) {
         clearConsole();
         this.consoleView.setTextColor(Color.RED);
-        this.consoleView.setText(errorMessage);
+        this.consoleView.append(errorMessage);
     }
 
     public void log(String message) {
