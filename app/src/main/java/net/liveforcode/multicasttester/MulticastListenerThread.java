@@ -36,11 +36,13 @@ public class MulticastListenerThread extends MulticastThread {
                 continue;
             }
 
-            String data;
+            String data = "";
 
-            if (this.activity.isDisplayedInHex())
-                data = bytesToHex(packet.getData());
-            else
+            if (this.activity.isDisplayedInHex()) {
+                for (byte b : new String(packet.getData()).trim().getBytes()) {
+                    data += "0x" + Integer.toHexString(b) + " ";
+                }
+            } else
                 data = new String(packet.getData()).trim();
 
             activity.log("Received! " + data);

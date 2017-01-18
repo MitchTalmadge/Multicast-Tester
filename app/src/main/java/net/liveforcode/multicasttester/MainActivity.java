@@ -114,9 +114,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onToggleHexCheckbox(CheckBox checkBox) {
-        if(checkBox.getId() == R.id.hexDisplayCheckBox) {
-            this.isDisplayedInHex = checkBox.isChecked();
+    public void onToggleHexCheckbox(View view) {
+        if(view.getId() == R.id.hexDisplayCheckBox) {
+            this.isDisplayedInHex = ((CheckBox)view).isChecked();
         }
     }
 

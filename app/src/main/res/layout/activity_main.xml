@@ -75,7 +75,7 @@
         <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Display in Hexadecimal"
+            android:text="Receive in Hexadecimal"
             android:id="@+id/hexDisplayCheckBox"
             android:checked="false"
             android:onClick="onToggleHexCheckbox" />
