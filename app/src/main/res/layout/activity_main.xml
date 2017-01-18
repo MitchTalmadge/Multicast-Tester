@@ -72,6 +72,14 @@
 
         </ScrollView>
 
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Display in Hexadecimal"
+            android:id="@+id/hexDisplayCheckBox"
+            android:checked="false"
+            android:onClick="onToggleHexCheckbox" />
+
         <EditText
             android:id="@+id/messageToSend"
             android:layout_width="fill_parent"

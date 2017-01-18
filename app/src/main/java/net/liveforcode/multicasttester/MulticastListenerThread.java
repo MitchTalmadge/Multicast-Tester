@@ -8,6 +8,8 @@ import java.net.DatagramPacket;
 
 public class MulticastListenerThread extends MulticastThread {
 
+    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+
     private TextView consoleView;
     private DatagramPacket packet;
 
@@ -15,7 +17,6 @@ public class MulticastListenerThread extends MulticastThread {
         super("MulticastListenerThread", activity, multicastIP, multicastPort, new Handler());
         this.consoleView = consoleView;
     }
-
 
     @Override
     public void run() {
@@ -35,7 +36,12 @@ public class MulticastListenerThread extends MulticastThread {
                 continue;
             }
 
-            final String data = new String(packet.getData()).trim();
+            String data;
+
+            if (this.activity.isDisplayedInHex())
+                data = bytesToHex(packet.getData());
+            else
+                data = new String(packet.getData()).trim();
 
             activity.log("Received! " + data);
 
@@ -51,4 +57,15 @@ public class MulticastListenerThread extends MulticastThread {
         if (multicastSocket != null)
             this.multicastSocket.close();
     }
+
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for (int j = 0; j < bytes.length; j++) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
+            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
+
 }

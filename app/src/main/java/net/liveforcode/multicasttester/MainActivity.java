@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -29,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
 
     private boolean isListening = false;
+    private boolean isDisplayedInHex = false;
     private MulticastListenerThread multicastListenerThread;
     private MulticastSenderThread multicastSenderThread;
     private WifiManager.MulticastLock wifiLock;
@@ -109,6 +111,12 @@ public class MainActivity extends AppCompatActivity {
             this.clearConsole();
         } else if (view.getId() == R.id.sendMessageButton) {
             sendMulticastMessage(getMessageToSend());
+        }
+    }
+
+    public void onToggleHexCheckbox(CheckBox checkBox) {
+        if(checkBox.getId() == R.id.hexDisplayCheckBox) {
+            this.isDisplayedInHex = checkBox.isChecked();
         }
     }
 
@@ -241,6 +249,10 @@ public class MainActivity extends AppCompatActivity {
 
     public String getMessageToSend() {
         return this.messageToSendField.getText().toString();
+    }
+
+    public boolean isDisplayedInHex() {
+        return isDisplayedInHex;
     }
 
     private void clearConsole() {
