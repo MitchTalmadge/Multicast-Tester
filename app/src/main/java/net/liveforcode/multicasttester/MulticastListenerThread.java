@@ -40,7 +40,7 @@ public class MulticastListenerThread extends MulticastThread {
 
             if (this.activity.isDisplayedInHex()) {
                 for (byte b : new String(packet.getData()).trim().getBytes()) {
-                    data += "0x" + Integer.toHexString(b) + " ";
+                    data += "0x" + String.format("%02X ", b);
                 }
             } else
                 data = new String(packet.getData()).trim();
@@ -49,12 +49,7 @@ public class MulticastListenerThread extends MulticastThread {
 
             final String consoleMessage = "[" + ((getLocalIP().equals(packet.getAddress().getHostAddress())) ? "You" : packet.getAddress().getHostAddress()) + "] " + data + "\n";
 
-            this.handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    consoleView.append(consoleMessage);
-                }
-            });
+            this.handler.post(() -> consoleView.append(consoleMessage));
         }
         if (multicastSocket != null)
             this.multicastSocket.close();

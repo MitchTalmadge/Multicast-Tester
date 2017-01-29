@@ -12,7 +12,7 @@ import java.net.MulticastSocket;
 import java.net.NetworkInterface;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class MulticastThread extends Thread {
+class MulticastThread extends Thread {
 
     final AtomicBoolean running = new AtomicBoolean(true);
     final MainActivity activity;
@@ -20,11 +20,10 @@ public class MulticastThread extends Thread {
     final int multicastPort;
     final Handler handler;
 
-    protected MulticastSocket multicastSocket;
+    MulticastSocket multicastSocket;
     private InetAddress inetAddress;
-    private NetworkInterface networkInterface;
 
-    public MulticastThread(String threadName, MainActivity activity, String multicastIP, int multicastPort, Handler handler) {
+    MulticastThread(String threadName, MainActivity activity, String multicastIP, int multicastPort, Handler handler) {
         super(threadName);
         this.activity = activity;
         this.multicastIP = multicastIP;
@@ -44,7 +43,7 @@ public class MulticastThread extends Thread {
                     (byte) (wifiIPInt >> 16 & 0xff),
                     (byte) (wifiIPInt >> 24 & 0xff)};
             this.inetAddress = InetAddress.getByAddress(wifiIPByte);
-            this.networkInterface = NetworkInterface.getByInetAddress(inetAddress);
+            NetworkInterface networkInterface = NetworkInterface.getByInetAddress(inetAddress);
 
             this.multicastSocket = new MulticastSocket(multicastPort);
             multicastSocket.setNetworkInterface(networkInterface);
@@ -80,7 +79,7 @@ public class MulticastThread extends Thread {
         return this.inetAddress.getHostAddress();
     }
 
-    void outputErrorToConsole(final String errorMessage) {
+    private void outputErrorToConsole(final String errorMessage) {
         handler.post(new Runnable() {
             @Override
             public void run() {
@@ -89,7 +88,7 @@ public class MulticastThread extends Thread {
         });
     }
 
-    public void stopRunning() {
+    void stopRunning() {
         this.running.set(false);
     }
 }

@@ -11,4 +11,5 @@
     <string name="message_to_send">Message to Send</string>
     <string name="clear_console">Clear Console</string>
     <string name="send_message">Send Message</string>
+    <string name="receive_in_hexadecimal">Receive in Hexadecimal</string>
 </resources>

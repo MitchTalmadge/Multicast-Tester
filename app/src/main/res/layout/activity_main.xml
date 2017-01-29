@@ -75,7 +75,7 @@
         <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Receive in Hexadecimal"
+            android:text="@string/receive_in_hexadecimal"
             android:id="@+id/hexDisplayCheckBox"
             android:checked="false"
             android:onClick="onToggleHexCheckbox" />
@@ -85,7 +85,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:hint="@string/message_to_send"
-            android:maxLength="32" />
+            android:maxLength="256" />
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -108,7 +108,7 @@
                 android:layout_weight="1"
                 android:enabled="false"
                 android:onClick="onButton"
-                android:text="@string/send_message" />
+                android:text="@string/send_message"/>
 
         </LinearLayout>
 
