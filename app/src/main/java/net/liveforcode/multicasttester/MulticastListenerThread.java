@@ -5,17 +5,16 @@ import android.widget.TextView;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.util.Arrays;
 
 public class MulticastListenerThread extends MulticastThread {
 
     private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
-    private TextView consoleView;
     private DatagramPacket packet;
 
-    public MulticastListenerThread(MainActivity activity, String multicastIP, int multicastPort, TextView consoleView) {
+    public MulticastListenerThread(MainActivity activity, String multicastIP, int multicastPort) {
         super("MulticastListenerThread", activity, multicastIP, multicastPort, new Handler());
-        this.consoleView = consoleView;
     }
 
     @Override
@@ -39,9 +38,8 @@ public class MulticastListenerThread extends MulticastThread {
             String data = "";
 
             if (this.activity.isDisplayedInHex()) {
-                for (byte b : new String(packet.getData()).trim().getBytes()) {
-                    data += "0x" + String.format("%02X ", b);
-                }
+                byte[] trimmedData = Arrays.copyOf(packet.getData(), packet.getLength());
+                data += bytesToHex(trimmedData);
             } else
                 data = new String(packet.getData()).trim();
 
@@ -49,7 +47,7 @@ public class MulticastListenerThread extends MulticastThread {
 
             final String consoleMessage = "[" + ((getLocalIP().equals(packet.getAddress().getHostAddress())) ? "You" : packet.getAddress().getHostAddress()) + "] " + data + "\n";
 
-            this.handler.post(() -> consoleView.append(consoleMessage));
+            this.handler.post(() -> activity.outputTextToConsole(consoleMessage));
         }
         if (multicastSocket != null)
             this.multicastSocket.close();
@@ -62,7 +60,14 @@ public class MulticastListenerThread extends MulticastThread {
             hexChars[j * 2] = HEX_ARRAY[v >>> 4];
             hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
         }
-        return new String(hexChars);
+
+        StringBuilder hexStringBuilder = new StringBuilder();
+        for(int i = 0; i < hexChars.length; i+= 2)
+        {
+            hexStringBuilder.append("0x").append(hexChars[i]).append(hexChars[i+1]).append(" ");
+        }
+
+        return hexStringBuilder.toString();
     }
 
 }

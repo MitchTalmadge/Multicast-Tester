@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
+import android.net.Network;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -11,9 +12,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import net.liveforcode.multicasttester.receivers.WifiMonitoringReceiver;
@@ -31,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isListening = false;
     private boolean isDisplayedInHex = false;
+    private boolean errorDisplayed = false;
     private MulticastListenerThread multicastListenerThread;
     private MulticastSenderThread multicastSenderThread;
     private WifiManager.MulticastLock wifiLock;
@@ -101,6 +105,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onButton(View view) {
+        // Hide the keyboard
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+
         if (view.getId() == R.id.startListeningButton) {
             if (this.isListening) {
                 stopListening();
@@ -123,16 +131,22 @@ public class MainActivity extends AppCompatActivity {
     private void startListening() {
         if (!isListening) {
             ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+
             if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected()) {
                 if (validateInputFields()) {
                     setWifiLockAcquired(true);
 
-                    this.multicastListenerThread = new MulticastListenerThread(this, getMulticastIP(), getMulticastPort(), this.consoleView);
+                    if(errorDisplayed) {
+                        clearConsole();
+                        errorDisplayed = false;
+                    }
+
+                    this.multicastListenerThread = new MulticastListenerThread(this, getMulticastIP(), getMulticastPort());
                     multicastListenerThread.start();
 
                     isListening = true;
                     updateButtonStates();
-                    this.clearConsole();
+
                 }
             } else {
                 outputErrorToConsole("Error: You are not connected to a WiFi network!");
@@ -147,12 +161,11 @@ public class MainActivity extends AppCompatActivity {
 
             stopThreads();
             setWifiLockAcquired(false);
-            clearConsole();
         }
     }
 
     private void sendMulticastMessage(String message) {
-        this.log("Sending Message! "+message);
+        this.log("Sending Message: "+message);
         if (this.isListening) {
             this.multicastSenderThread = new MulticastSenderThread(this, getMulticastIP(), getMulticastPort(), message);
             multicastSenderThread.start();
@@ -184,7 +197,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateButtonStates() {
         ((Button) findViewById(R.id.startListeningButton)).setText((isListening) ? R.string.stop_listening : R.string.start_listening);
-        findViewById(R.id.clearConsoleButton).setEnabled(isListening);
         findViewById(R.id.sendMessageButton).setEnabled(isListening);
     }
 
@@ -256,15 +268,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void clearConsole() {
-        log("Clearing Console");
         this.consoleView.setText("");
         this.consoleView.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
     }
 
+    public void outputTextToConsole(String message) {
+        if(errorDisplayed) {
+            clearConsole();
+            errorDisplayed = false;
+        }
+
+        this.consoleView.append(message);
+        ((ScrollView) this.consoleView.getParent()).fullScroll(View.FOCUS_DOWN);
+    }
+
     public void outputErrorToConsole(String errorMessage) {
         clearConsole();
+        outputTextToConsole(errorMessage);
         this.consoleView.setTextColor(Color.RED);
-        this.consoleView.append(errorMessage);
+        errorDisplayed = true;
     }
 
     public void log(String message) {
