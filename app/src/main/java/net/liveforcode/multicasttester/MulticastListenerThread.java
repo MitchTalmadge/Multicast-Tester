@@ -7,13 +7,11 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.util.Arrays;
 
-public class MulticastListenerThread extends MulticastThread {
+class MulticastListenerThread extends MulticastThread {
 
     private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
-    private DatagramPacket packet;
-
-    public MulticastListenerThread(MainActivity activity, String multicastIP, int multicastPort) {
+    MulticastListenerThread(MainActivity activity, String multicastIP, int multicastPort) {
         super("MulticastListenerThread", activity, multicastIP, multicastPort, new Handler());
     }
 
@@ -21,7 +19,7 @@ public class MulticastListenerThread extends MulticastThread {
     public void run() {
         super.run();
 
-        this.packet = new DatagramPacket(new byte[512], 512);
+        DatagramPacket packet = new DatagramPacket(new byte[512], 512);
 
         while (running.get()) {
             packet.setData(new byte[1024]);
@@ -53,7 +51,7 @@ public class MulticastListenerThread extends MulticastThread {
             this.multicastSocket.close();
     }
 
-    public static String bytesToHex(byte[] bytes) {
+    private static String bytesToHex(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
         for (int j = 0; j < bytes.length; j++) {
             int v = bytes[j] & 0xFF;
@@ -62,9 +60,8 @@ public class MulticastListenerThread extends MulticastThread {
         }
 
         StringBuilder hexStringBuilder = new StringBuilder();
-        for(int i = 0; i < hexChars.length; i+= 2)
-        {
-            hexStringBuilder.append("0x").append(hexChars[i]).append(hexChars[i+1]).append(" ");
+        for (int i = 0; i < hexChars.length; i += 2) {
+            hexStringBuilder.append("0x").append(hexChars[i]).append(hexChars[i + 1]).append(" ");
         }
 
         return hexStringBuilder.toString();

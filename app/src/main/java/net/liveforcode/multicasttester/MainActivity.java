@@ -279,7 +279,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         this.consoleView.append(message);
-        ((ScrollView) this.consoleView.getParent()).fullScroll(View.FOCUS_DOWN);
+
+        ScrollView scrollView = ((ScrollView) this.consoleView.getParent());
+        scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN));
     }
 
     public void outputErrorToConsole(String errorMessage) {
