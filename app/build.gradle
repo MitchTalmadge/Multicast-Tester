@@ -5,7 +5,7 @@ android {
     buildToolsVersion "29.0.2"
     defaultConfig {
         applicationId "net.liveforcode.multicasttester"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 29
         versionCode 5
         versionName '1.5'

@@ -8,6 +8,8 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,6 +20,7 @@ import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.google.android.material.button.MaterialButton;
 import com.mitchtalmadge.multicasttester.receivers.WifiMonitoringReceiver;
 
 import java.util.logging.Logger;
@@ -196,6 +199,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateButtonStates() {
         ((Button) findViewById(R.id.startListeningButton)).setText((isListening) ? R.string.stop_listening : R.string.start_listening);
+        ((MaterialButton) findViewById(R.id.startListeningButton))
+                .setIcon(isListening
+                        ? ContextCompat.getDrawable(getApplicationContext(), R.drawable.baseline_stop_24)
+                        : ContextCompat.getDrawable(getApplicationContext(), R.drawable.baseline_play_arrow_24));
+
         findViewById(R.id.sendMessageButton).setEnabled(isListening);
     }
 

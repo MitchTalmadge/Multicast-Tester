@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
@@ -44,12 +45,14 @@
 
         </LinearLayout>
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/startListeningButton"
+            style="@style/Widget.MaterialComponents.Button.Icon"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:onClick="onButton"
-            android:text="@string/start_listening" />
+            android:text="@string/start_listening"
+            app:icon="@drawable/baseline_play_arrow_24"/>
 
         <TextView
             android:layout_width="fill_parent"
@@ -99,7 +102,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:onClick="onButton"
-                android:text="@string/clear_console" />
+                android:text="@string/clear_console"
+                app:icon="@drawable/baseline_clear_all_24"/>
 
             <Button
                 android:id="@+id/sendMessageButton"
@@ -109,7 +113,8 @@
                 android:layout_weight="1"
                 android:enabled="false"
                 android:onClick="onButton"
-                android:text="@string/send_message"/>
+                android:text="@string/send_message"
+                app:icon="@drawable/baseline_send_24"/>
 
         </LinearLayout>
 
