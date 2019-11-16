@@ -21,8 +21,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:digits="0,1,2,3,4,5,6,7,8,9,."
+            android:digits="0123456789."
             android:hint="@string/multicast_ip_hint"
+            android:imeOptions="actionNext"
+            android:inputType="number"
             android:maxLength="15" />
 
         <EditText
@@ -32,6 +34,7 @@
             android:layout_weight="1"
             android:ems="10"
             android:hint="@string/multicast_port_hint"
+            android:imeOptions="actionDone"
             android:inputType="number"
             android:maxLength="5" />
 
@@ -44,7 +47,6 @@
         android:layout_height="wrap_content"
         android:text="@string/start_streaming"
         app:icon="@drawable/ic_stream" />
-
 
 
 </LinearLayout>

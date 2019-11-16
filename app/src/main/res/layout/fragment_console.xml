@@ -20,8 +20,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:digits="0,1,2,3,4,5,6,7,8,9,."
+            android:digits="0123456789."
             android:hint="@string/multicast_ip_hint"
+            android:imeOptions="actionNext"
+            android:inputType="number"
             android:maxLength="15" />
 
         <EditText
@@ -31,6 +33,7 @@
             android:layout_weight="1"
             android:ems="10"
             android:hint="@string/multicast_port_hint"
+            android:imeOptions="actionDone"
             android:inputType="number"
             android:maxLength="5" />
 
@@ -51,8 +54,8 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
             android:layout_alignParentStart="true"
+            android:layout_alignParentBottom="true"
             android:text="@string/console"
             android:textSize="18sp" />
 
@@ -96,26 +99,27 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:baselineAligned="false">
+        android:baselineAligned="false"
+        android:orientation="horizontal">
+
         <EditText
             android:id="@+id/messageToSend"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="@string/message_to_send"
-            android:scrollbars="vertical"
             android:maxLength="256"
-            android:maxLines="4"/>
+            android:maxLines="4"
+            android:scrollbars="vertical" />
 
         <Button
             android:id="@+id/sendMessageButton"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="52dp"
             android:layout_height="52dp"
+            android:layout_gravity="bottom"
             android:layout_marginStart="10dp"
             android:enabled="false"
-            android:layout_gravity="bottom"
             app:icon="@drawable/ic_send" />
     </LinearLayout>
 
