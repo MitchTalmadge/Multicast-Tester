@@ -5,23 +5,23 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 
-import com.mitchtalmadge.multicasttester.MainActivity;
+import com.mitchtalmadge.multicasttester.ConsoleFragment;
 
 public class WifiMonitoringReceiver extends BroadcastReceiver {
-    private MainActivity mainActivity;
+    private ConsoleFragment consoleFragment;
 
-    public WifiMonitoringReceiver(MainActivity mainActivity) {
-        this.mainActivity = mainActivity;
+    public WifiMonitoringReceiver(ConsoleFragment consoleFragment) {
+        this.consoleFragment = consoleFragment;
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (mainActivity != null) {
+        if (consoleFragment != null) {
             ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-            mainActivity.log("Checking Wifi...");
+            consoleFragment.log("Checking Wifi...");
             if (!connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected()) {
-                mainActivity.log("Wifi is not enabled!");
-                mainActivity.onWifiDisconnected();
+                consoleFragment.log("Wifi is not enabled!");
+                consoleFragment.onWifiDisconnected();
             }
         }
     }

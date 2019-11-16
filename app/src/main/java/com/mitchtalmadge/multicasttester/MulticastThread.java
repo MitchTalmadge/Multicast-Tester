@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 class MulticastThread extends Thread {
 
     final AtomicBoolean running = new AtomicBoolean(true);
-    final MainActivity activity;
+    final ConsoleFragment fragment;
     final String multicastIP;
     final int multicastPort;
     final Handler handler;
@@ -23,9 +23,9 @@ class MulticastThread extends Thread {
     MulticastSocket multicastSocket;
     private InetAddress inetAddress;
 
-    MulticastThread(String threadName, MainActivity activity, String multicastIP, int multicastPort, Handler handler) {
+    MulticastThread(String threadName, ConsoleFragment fragment, String multicastIP, int multicastPort, Handler handler) {
         super(threadName);
-        this.activity = activity;
+        this.fragment = fragment;
         this.multicastIP = multicastIP;
         this.multicastPort = multicastPort;
         this.handler = handler;
@@ -34,7 +34,7 @@ class MulticastThread extends Thread {
     @Override
     public void run() {
         try {
-            WifiManager wifiManager = (WifiManager) activity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            WifiManager wifiManager = (WifiManager) fragment.getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
             int wifiIPInt = wifiInfo.getIpAddress();
             byte[] wifiIPByte = new byte[]{
@@ -54,7 +54,7 @@ class MulticastThread extends Thread {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    activity.stopListening();
+                    fragment.stopListening();
                 }
             });
             String error = "Error: Cannot bind Address or Port.";
@@ -65,7 +65,7 @@ class MulticastThread extends Thread {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    activity.stopListening();
+                    fragment.stopListening();
                 }
             });
             String error = "Error: Cannot bind Address or Port.\n"
@@ -83,7 +83,7 @@ class MulticastThread extends Thread {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                activity.outputErrorToConsole(errorMessage);
+                fragment.outputErrorToConsole(errorMessage);
             }
         });
     }

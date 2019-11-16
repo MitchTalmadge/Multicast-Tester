@@ -5,13 +5,9 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:textColor">#666</item>
-        <item name="android:textColorSecondary">#ccc</item>
     </style>
 
     <style name="ToolbarTheme" parent="@style/ThemeOverlay.MaterialComponents.ActionBar">
-        <item name="android:textColorPrimary">#666</item>
-        <item name="android:textColorSecondary">#ccc</item>
     </style>
 
 </resources>

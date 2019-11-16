@@ -10,7 +10,7 @@ public class MulticastSenderThread extends MulticastThread {
 
     private String messageToSend;
 
-    public MulticastSenderThread(MainActivity activity, String multicastIP, int multicastPort, String messageToSend) {
+    public MulticastSenderThread(ConsoleFragment activity, String multicastIP, int multicastPort, String messageToSend) {
         super("MulticastSenderThread", activity, multicastIP, multicastPort, new Handler());
         this.messageToSend = messageToSend;
     }

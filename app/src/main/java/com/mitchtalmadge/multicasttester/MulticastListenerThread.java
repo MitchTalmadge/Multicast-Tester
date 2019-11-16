@@ -10,7 +10,7 @@ class MulticastListenerThread extends MulticastThread {
 
     private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
-    MulticastListenerThread(MainActivity activity, String multicastIP, int multicastPort) {
+    MulticastListenerThread(ConsoleFragment activity, String multicastIP, int multicastPort) {
         super("MulticastListenerThread", activity, multicastIP, multicastPort, new Handler());
     }
 
@@ -34,17 +34,17 @@ class MulticastListenerThread extends MulticastThread {
 
             String data = "";
 
-            if (this.activity.isDisplayedInHex()) {
+            if (this.fragment.isDisplayedInHex()) {
                 byte[] trimmedData = Arrays.copyOf(packet.getData(), packet.getLength());
                 data += bytesToHex(trimmedData);
             } else
                 data = new String(packet.getData()).trim();
 
-            activity.log("Received! " + data);
+            fragment.log("Received! " + data);
 
             final String consoleMessage = "[" + ((getLocalIP().equals(packet.getAddress().getHostAddress())) ? "You" : packet.getAddress().getHostAddress()) + "] " + data + "\n";
 
-            this.handler.post(() -> activity.outputTextToConsole(consoleMessage));
+            this.handler.post(() -> fragment.outputTextToConsole(consoleMessage));
         }
         if (multicastSocket != null)
             this.multicastSocket.close();
