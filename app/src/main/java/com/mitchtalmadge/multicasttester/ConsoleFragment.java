@@ -201,7 +201,7 @@ public class ConsoleFragment extends Fragment implements View.OnClickListener {
         ((Button) view.findViewById(R.id.startListeningButton)).setText((isListening) ? R.string.stop_listening : R.string.start_listening);
         ((MaterialButton) view.findViewById(R.id.startListeningButton))
                 .setIcon(isListening
-                        ? ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_stop_black_24dp)
+                        ? ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_stop)
                         : ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_play_arrow));
 
         view.findViewById(R.id.sendMessageButton).setEnabled(isListening);
