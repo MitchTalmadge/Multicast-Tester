@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="menu_item_console_title">Console</string>
+    <string name="menu_item_stream_title">Stream</string>
 </resources>

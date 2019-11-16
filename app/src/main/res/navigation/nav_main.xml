@@ -3,10 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
-    app:startDestination="@id/consoleFragment">
-    <activity
-        android:id="@+id/consoleFragment"
+    app:startDestination="@id/console">
+    <fragment
+        android:id="@+id/console"
         android:name="com.mitchtalmadge.multicasttester.ConsoleFragment"
-        android:label="fragment_console"
+        android:label="Console"
         tools:layout="@layout/fragment_console" />
+    <fragment
+        android:id="@+id/stream"
+        android:name="com.mitchtalmadge.multicasttester.StreamFragment"
+        android:label="Stream"
+        tools:layout="@layout/fragment_stream" />
 </navigation>
