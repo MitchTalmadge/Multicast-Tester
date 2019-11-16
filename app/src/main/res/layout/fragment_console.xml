@@ -36,7 +36,7 @@
 
     </LinearLayout>
 
-    <com.google.android.material.button.MaterialButton
+    <Button
         android:id="@+id/startListeningButton"
         style="@style/Widget.MaterialComponents.Button.Icon"
         android:layout_width="fill_parent"
@@ -52,6 +52,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
             android:text="@string/console"
             android:textSize="18sp" />
 
@@ -60,7 +61,7 @@
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="52dp"
             android:layout_height="40dp"
-            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
             android:insetLeft="0dp"
             android:insetTop="0dp"
             android:insetRight="0dp"
@@ -92,20 +93,31 @@
         android:checked="false"
         android:text="@string/receive_in_hexadecimal" />
 
-    <EditText
-        android:id="@+id/messageToSend"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/message_to_send"
-        android:maxLength="256" />
-
-    <Button
-        android:id="@+id/sendMessageButton"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:enabled="false"
-        android:text="@string/send_message"
-        app:icon="@drawable/ic_send" />
+        android:orientation="horizontal"
+        android:baselineAligned="false">
+        <EditText
+            android:id="@+id/messageToSend"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="@string/message_to_send"
+            android:scrollbars="vertical"
+            android:maxLength="256"
+            android:maxLines="4"/>
+
+        <Button
+            android:id="@+id/sendMessageButton"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_marginStart="10dp"
+            android:enabled="false"
+            android:layout_gravity="bottom"
+            app:icon="@drawable/ic_send" />
+    </LinearLayout>
+
 
 </LinearLayout>
