@@ -6,8 +6,8 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        this.toolbar = (Toolbar) findViewById(R.id.toolbar);
+        this.toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         toolbar.setLogo(R.mipmap.ic_launcher);
@@ -54,10 +54,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        this.multicastIPField = (EditText) findViewById(R.id.multicastIP);
-        this.multicastPortField = (EditText) findViewById(R.id.multicastPort);
-        this.consoleView = (TextView) findViewById(R.id.consoleTextView);
-        this.messageToSendField = (EditText) findViewById(R.id.messageToSend);
+        this.multicastIPField = findViewById(R.id.multicastIP);
+        this.multicastPortField = findViewById(R.id.multicastPort);
+        this.consoleView = findViewById(R.id.consoleTextView);
+        this.messageToSendField = findViewById(R.id.messageToSend);
 
         setWifiMonitorRegistered(true);
     }
