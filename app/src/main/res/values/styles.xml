@@ -7,8 +7,6 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textColor">#666</item>
         <item name="android:textColorSecondary">#ccc</item>
-        <item name="android:navigationBarColor">@color/colorAccent</item>
-        <item name="android:statusBarColor">@color/colorAccent</item>
     </style>
 
     <style name="ToolbarTheme" parent="@style/ThemeOverlay.AppCompat.ActionBar">

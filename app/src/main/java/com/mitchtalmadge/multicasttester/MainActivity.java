@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
             if (wifiLock != null && wifiLock.isHeld())
                 wifiLock.release();
 
-            WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+            WifiManager wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             if (wifi != null) {
                 this.wifiLock = wifi.createMulticastLock("MulticastTester");
                 wifiLock.acquire();

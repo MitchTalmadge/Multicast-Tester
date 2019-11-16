@@ -34,7 +34,7 @@ class MulticastThread extends Thread {
     @Override
     public void run() {
         try {
-            WifiManager wifiManager = (WifiManager) activity.getSystemService(Context.WIFI_SERVICE);
+            WifiManager wifiManager = (WifiManager) activity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
             int wifiIPInt = wifiInfo.getIpAddress();
             byte[] wifiIPByte = new byte[]{
