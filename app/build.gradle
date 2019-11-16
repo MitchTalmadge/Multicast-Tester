@@ -1,17 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    compileSdkVersion 28
+    buildToolsVersion "28.0.3"
     defaultConfig {
         applicationId "net.liveforcode.multicasttester"
-        minSdkVersion 13
-        targetSdkVersion 25
-        versionCode 4
-        versionName '1.4'
-        jackOptions {
-            enabled true
-        }
+        minSdkVersion 19
+        targetSdkVersion 28
+        versionCode 5
+        versionName '1.5'
     }
     buildTypes {
         release {
@@ -28,7 +25,7 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:support-v13:25.1.0'
-    compile 'com.android.support:design:25.1.0'
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:support-v13:28.0.0'
+    implementation 'com.android.support:design:28.0.0'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
 }

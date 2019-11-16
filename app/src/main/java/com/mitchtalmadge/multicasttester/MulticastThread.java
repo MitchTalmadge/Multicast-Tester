@@ -1,4 +1,4 @@
-package net.liveforcode.multicasttester;
+package com.mitchtalmadge.multicasttester;
 
 import android.content.Context;
 import android.net.wifi.WifiInfo;

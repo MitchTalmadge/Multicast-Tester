@@ -1,10 +1,9 @@
-package net.liveforcode.multicasttester;
+package com.mitchtalmadge.multicasttester;
 
 import android.content.Context;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
-import android.net.Network;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -19,7 +18,7 @@ import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import net.liveforcode.multicasttester.receivers.WifiMonitoringReceiver;
+import com.mitchtalmadge.multicasttester.receivers.WifiMonitoringReceiver;
 
 import java.util.logging.Logger;
 

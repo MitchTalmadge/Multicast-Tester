@@ -1,4 +1,4 @@
-package net.liveforcode.multicasttester;
+package com.mitchtalmadge.multicasttester;
 
 import android.os.Handler;
 

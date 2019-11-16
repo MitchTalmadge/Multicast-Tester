@@ -1,7 +1,6 @@
-package net.liveforcode.multicasttester;
+package com.mitchtalmadge.multicasttester;
 
 import android.os.Handler;
-import android.widget.TextView;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
