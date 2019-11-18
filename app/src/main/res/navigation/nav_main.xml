@@ -6,7 +6,7 @@
     app:startDestination="@id/console">
     <fragment
         android:id="@+id/console"
-        android:name="com.mitchtalmadge.multicasttester.ConsoleFragment"
+        android:name="com.mitchtalmadge.multicasttester.console.ConsoleFragment"
         android:label="Console"
         tools:layout="@layout/fragment_console" />
     <fragment

@@ -1,4 +1,4 @@
-package com.mitchtalmadge.multicasttester;
+package com.mitchtalmadge.multicasttester.console;
 
 import android.os.Handler;
 
@@ -10,7 +10,7 @@ public class MulticastSenderThread extends MulticastThread {
 
     private String messageToSend;
 
-    public MulticastSenderThread(ConsoleFragment activity, String multicastIP, int multicastPort, String messageToSend) {
+    MulticastSenderThread(ConsoleFragment activity, String multicastIP, int multicastPort, String messageToSend) {
         super("MulticastSenderThread", activity, multicastIP, multicastPort, new Handler());
         this.messageToSend = messageToSend;
     }

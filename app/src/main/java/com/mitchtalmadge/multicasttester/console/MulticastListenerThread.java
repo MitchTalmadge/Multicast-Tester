@@ -1,6 +1,7 @@
-package com.mitchtalmadge.multicasttester;
+package com.mitchtalmadge.multicasttester.console;
 
 import android.os.Handler;
+import android.util.Log;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -40,7 +41,7 @@ class MulticastListenerThread extends MulticastThread {
             } else
                 data = new String(packet.getData()).trim();
 
-            fragment.log("Received! " + data);
+            Log.v(getClass().getName(), "Received Message: " + data);
 
             final String consoleMessage = "[" + ((getLocalIP().equals(packet.getAddress().getHostAddress())) ? "You" : packet.getAddress().getHostAddress()) + "] " + data + "\n";
 

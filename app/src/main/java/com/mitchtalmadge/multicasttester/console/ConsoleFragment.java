@@ -1,11 +1,15 @@
-package com.mitchtalmadge.multicasttester;
+package com.mitchtalmadge.multicasttester.console;
 
 import android.content.Context;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +19,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,28 +27,31 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
-import com.mitchtalmadge.multicasttester.receivers.WifiMonitoringReceiver;
+import com.mitchtalmadge.multicasttester.R;
 
 import java.util.Objects;
-import java.util.logging.Logger;
 
 import static android.content.Context.CONNECTIVITY_SERVICE;
 
-public class ConsoleFragment extends Fragment implements View.OnClickListener {
+public class ConsoleFragment extends Fragment implements View.OnClickListener, View.OnKeyListener {
 
+    private MaterialButton startListeningButton;
+    private TextView wifiNoticeLabel;
     private EditText multicastIPField;
     private EditText multicastPortField;
     private TextView consoleView;
     private EditText messageToSendField;
+    private Button sendMessageButton;
 
     private boolean isListening = false;
     private boolean isDisplayedInHex = false;
     private boolean errorDisplayed = false;
     private MulticastListenerThread multicastListenerThread;
     private MulticastSenderThread multicastSenderThread;
-    private WifiManager.MulticastLock wifiLock;
+    private WifiManager.MulticastLock wifiMulticastLock;
 
-    private WifiMonitoringReceiver wifiMonitoringReceiver;
+    private ConsoleNetworkCallback consoleNetworkCallback;
+    private boolean wifiConnected = false;
 
     @Nullable
     @Override
@@ -51,11 +59,23 @@ public class ConsoleFragment extends Fragment implements View.OnClickListener {
 
         View view = inflater.inflate(R.layout.fragment_console, container, false);
 
+        // Assignments
+        this.startListeningButton = view.findViewById(R.id.startListeningButton);
+        this.wifiNoticeLabel = view.findViewById(R.id.wifiNoticeLabel);
+        this.multicastIPField = view.findViewById(R.id.multicastIP);
+        this.multicastPortField = view.findViewById(R.id.multicastPort);
+        this.consoleView = view.findViewById(R.id.consoleTextView);
+        this.messageToSendField = view.findViewById(R.id.messageToSend);
+        this.sendMessageButton = view.findViewById(R.id.sendMessageButton);
+
         // Click listeners
-        view.findViewById(R.id.startListeningButton).setOnClickListener(this);
+        this.startListeningButton.setOnClickListener(this);
         view.findViewById(R.id.clearConsoleButton).setOnClickListener(this);
-        view.findViewById(R.id.sendMessageButton).setOnClickListener(this);
+        this.sendMessageButton.setOnClickListener(this);
         view.findViewById(R.id.hexDisplayCheckBox).setOnClickListener(this);
+
+        this.multicastIPField.setOnKeyListener(this);
+        this.multicastPortField.setOnKeyListener(this);
 
         return view;
     }
@@ -64,20 +84,17 @@ public class ConsoleFragment extends Fragment implements View.OnClickListener {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        View view = Objects.requireNonNull(getView());
 
-        this.multicastIPField = view.findViewById(R.id.multicastIP);
-        this.multicastPortField = view.findViewById(R.id.multicastPort);
-        this.consoleView = view.findViewById(R.id.consoleTextView);
-        this.messageToSendField = view.findViewById(R.id.messageToSend);
-
-        setWifiMonitorRegistered(true);
+        this.consoleNetworkCallback = new ConsoleNetworkCallback();
+        ConnectivityManager connectivityManager = Objects.requireNonNull((ConnectivityManager) Objects.requireNonNull(getActivity()).getSystemService(CONNECTIVITY_SERVICE));
+        connectivityManager.registerNetworkCallback(new NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI).build(), consoleNetworkCallback);
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        setWifiMonitorRegistered(false);
+        ConnectivityManager connectivityManager = Objects.requireNonNull((ConnectivityManager) Objects.requireNonNull(getActivity()).getSystemService(CONNECTIVITY_SERVICE));
+        connectivityManager.unregisterNetworkCallback(this.consoleNetworkCallback);
     }
 
     @Override
@@ -86,20 +103,6 @@ public class ConsoleFragment extends Fragment implements View.OnClickListener {
         if (isListening)
             stopListening();
         stopThreads();
-    }
-
-    private void setWifiMonitorRegistered(boolean registered) {
-        if (registered) {
-            if (this.wifiMonitoringReceiver != null)
-                getActivity().unregisterReceiver(this.wifiMonitoringReceiver);
-            this.wifiMonitoringReceiver = new WifiMonitoringReceiver(this);
-            getActivity().registerReceiver(this.wifiMonitoringReceiver, new IntentFilter("android.net.wifi.STATE_CHANGE"));
-        } else {
-            if (this.wifiMonitoringReceiver != null) {
-                getActivity().unregisterReceiver(this.wifiMonitoringReceiver);
-                this.wifiMonitoringReceiver = null;
-            }
-        }
     }
 
     @Override
@@ -128,44 +131,42 @@ public class ConsoleFragment extends Fragment implements View.OnClickListener {
         }
     }
 
+    @Override
+    public boolean onKey(View view, int i, KeyEvent keyEvent) {
+        updateButtonStates();
+        return false;
+    }
+
     private void startListening() {
-        if (!isListening) {
-            ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(CONNECTIVITY_SERVICE);
+        if (validateInputFields()) {
+            acquireWifiMulticastLock();
 
-            if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected()) {
-                if (validateInputFields()) {
-                    setWifiLockAcquired(true);
-
-                    if (errorDisplayed) {
-                        clearConsole();
-                        errorDisplayed = false;
-                    }
-
-                    this.multicastListenerThread = new MulticastListenerThread(this, getMulticastIP(), getMulticastPort());
-                    multicastListenerThread.start();
-
-                    isListening = true;
-                    updateButtonStates();
-
-                }
-            } else {
-                outputErrorToConsole("Error: You are not connected to a WiFi network!");
+            if (errorDisplayed) {
+                clearConsole();
+                errorDisplayed = false;
             }
+
+            this.multicastListenerThread = new MulticastListenerThread(this, getMulticastIP(), getMulticastPort());
+            multicastListenerThread.start();
+
+            isListening = true;
+            updateButtonStates();
+
         }
     }
 
     void stopListening() {
         if (isListening) {
             isListening = false;
-            updateButtonStates();
-
             stopThreads();
-            setWifiLockAcquired(false);
+            releaseWifiMulticastLock();
         }
+
+        updateButtonStates();
     }
 
     private void sendMulticastMessage(String message) {
-        this.log("Sending Message: " + message);
+        Log.v(getClass().getName(), "Sending Message: " + message);
         if (this.isListening) {
             this.multicastSenderThread = new MulticastSenderThread(this, getMulticastIP(), getMulticastPort(), message);
             multicastSenderThread.start();
@@ -179,32 +180,45 @@ public class ConsoleFragment extends Fragment implements View.OnClickListener {
             this.multicastSenderThread.interrupt();
     }
 
-    private void setWifiLockAcquired(boolean acquired) {
-        if (acquired) {
-            if (wifiLock != null && wifiLock.isHeld())
-                wifiLock.release();
+    private void acquireWifiMulticastLock() {
+        releaseWifiMulticastLock();
 
-            WifiManager wifi = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            if (wifi != null) {
-                this.wifiLock = wifi.createMulticastLock("MulticastTester");
-                wifiLock.acquire();
-            }
-        } else {
-            if (wifiLock != null && wifiLock.isHeld())
-                wifiLock.release();
+        WifiManager wifi = (WifiManager) Objects.requireNonNull(getActivity()).getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        if (wifi != null) {
+            this.wifiMulticastLock = wifi.createMulticastLock("MulticastTester");
+            wifiMulticastLock.acquire();
         }
     }
 
+    private void releaseWifiMulticastLock() {
+        if (wifiMulticastLock != null && wifiMulticastLock.isHeld())
+            wifiMulticastLock.release();
+    }
+
     private void updateButtonStates() {
-        View view = Objects.requireNonNull(getView());
+        boolean startListeningEnabled = true;
 
-        ((Button) view.findViewById(R.id.startListeningButton)).setText((isListening) ? R.string.stop_listening : R.string.start_listening);
-        ((MaterialButton) view.findViewById(R.id.startListeningButton))
-                .setIcon(isListening
-                        ? ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_stop)
-                        : ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_play_arrow));
+        // Wifi State
+        if (!wifiConnected)
+            startListeningEnabled = false;
+        this.wifiNoticeLabel.setVisibility(wifiConnected
+                ? View.GONE
+                : View.VISIBLE);
 
-        view.findViewById(R.id.sendMessageButton).setEnabled(isListening);
+        // Check entry fields
+        if (this.multicastIPField.getText().length() == 0 || this.multicastPortField.getText().length() == 0)
+            startListeningEnabled = false;
+
+        this.startListeningButton.setEnabled(startListeningEnabled);
+        this.startListeningButton.setText((isListening)
+                ? R.string.stop_listening
+                : R.string.start_listening);
+        this.startListeningButton.setIcon(isListening
+                ? ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_stop)
+                : ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_play_arrow));
+
+
+        this.sendMessageButton.setEnabled(isListening);
     }
 
     private boolean validateInputFields() {
@@ -296,16 +310,24 @@ public class ConsoleFragment extends Fragment implements View.OnClickListener {
         outputTextToConsole(errorMessage);
         this.consoleView.setTextColor(Color.RED);
         errorDisplayed = true;
+
     }
 
-    public void log(String message) {
-        Logger.getLogger("MulticastTester").info(message);
-    }
+    private class ConsoleNetworkCallback extends ConnectivityManager.NetworkCallback {
 
-    public void onWifiDisconnected() {
-        if (isListening) {
-            stopListening();
-            outputErrorToConsole("Error: WiFi has been disconnected. Listening has stopped.");
+        @Override
+        public void onAvailable(@NonNull Network network) {
+            wifiConnected = true;
+            Objects.requireNonNull(getActivity()).runOnUiThread(ConsoleFragment.this::updateButtonStates);
+        }
+
+        @Override
+        public void onLost(@NonNull Network network) {
+            wifiConnected = false;
+            if (isListening) {
+                Objects.requireNonNull(getActivity()).runOnUiThread(ConsoleFragment.this::stopListening);
+                Toast.makeText(getContext(), R.string.connectivity_lost, Toast.LENGTH_LONG).show();
+            }
         }
     }
 

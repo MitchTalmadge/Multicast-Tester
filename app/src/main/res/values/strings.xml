@@ -11,4 +11,6 @@
     <string name="start_listening">Start Listening</string>
     <string name="start_streaming">Start Streaming</string>
     <string name="stop_listening">Stop Listening</string>
+    <string name="connectivity_lost">Internet connectivity has been lost. Listening has stopped.</string>
+    <string name="wifi_connection_required">WiFi Connection Required</string>
 </resources>

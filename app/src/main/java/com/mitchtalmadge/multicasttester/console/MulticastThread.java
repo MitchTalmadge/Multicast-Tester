@@ -1,9 +1,11 @@
-package com.mitchtalmadge.multicasttester;
+package com.mitchtalmadge.multicasttester.console;
 
 import android.content.Context;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
+
+import com.mitchtalmadge.multicasttester.console.ConsoleFragment;
 
 import java.io.IOException;
 import java.net.BindException;
@@ -51,23 +53,13 @@ class MulticastThread extends Thread {
             multicastSocket.setSoTimeout(100);
             multicastSocket.setTimeToLive(2);
         } catch (BindException e) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    fragment.stopListening();
-                }
-            });
+            handler.post(fragment::stopListening);
             String error = "Error: Cannot bind Address or Port.";
             if (multicastPort < 1024)
                 error += "\nTry binding to a port larger than 1024.";
             outputErrorToConsole(error);
         } catch (IOException e) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    fragment.stopListening();
-                }
-            });
+            handler.post(fragment::stopListening);
             String error = "Error: Cannot bind Address or Port.\n"
                     + "An error occurred: " + e.getMessage();
             outputErrorToConsole(error);
