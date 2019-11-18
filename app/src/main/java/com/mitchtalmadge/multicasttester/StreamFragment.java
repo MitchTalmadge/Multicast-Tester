@@ -49,6 +49,8 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
     private TextView cameraErrorLabel;
     private TextureView cameraTexture;
 
+    private boolean cameraTextureAvailable = false;
+
     private boolean isStreaming = false;
     private CameraDevice cameraDevice;
     private Size cameraOutputSize;
@@ -77,6 +79,21 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         displayCameraPreview();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        stopStreaming();
+        closeCamera();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        openCamera(false);
     }
 
     @Override
@@ -113,6 +130,10 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
         // Don't open again if already open.
         if (cameraDevice != null)
             return true;
+
+        // We need a texture to use the camera.
+        if(!cameraTextureAvailable)
+            return false;
 
         // Check permission and request if needed.
         if (ActivityCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -266,6 +287,7 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
 
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i, int i1) {
+            cameraTextureAvailable = true;
             openCamera(false);
         }
 
@@ -276,7 +298,9 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
 
         @Override
         public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
-            return false;
+            cameraTextureAvailable = false;
+            closeCamera();
+            return true;
         }
 
         @Override
