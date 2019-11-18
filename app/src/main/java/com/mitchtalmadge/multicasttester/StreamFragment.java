@@ -132,7 +132,7 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
             return true;
 
         // We need a texture to use the camera.
-        if(!cameraTextureAvailable)
+        if (!cameraTextureAvailable)
             return false;
 
         // Check permission and request if needed.
@@ -158,6 +158,7 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
         } catch (CameraAccessException e) {
             Log.e(getClass().getName(), "Could not open camera", e);
             displayCameraErrorMessage(e.getMessage());
+            closeCamera();
             return false;
         }
     }
@@ -167,6 +168,8 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
             cameraDevice.close();
             cameraDevice = null;
         }
+
+        stopStreaming();
     }
 
     private void displayCameraPlaceholder() {
@@ -223,6 +226,7 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
         } catch (CameraAccessException e) {
             Log.e(getClass().getName(), "Could not create camera preview", e);
             displayCameraErrorMessage(e.getMessage());
+            closeCamera();
         }
     }
 
@@ -233,6 +237,7 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
         } catch (CameraAccessException e) {
             Log.e(getClass().getName(), "Camera preview update failed", e);
             displayCameraErrorMessage(e.getMessage());
+            closeCamera();
         }
     }
 
@@ -279,6 +284,7 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
         @Override
         public void onError(@NonNull CameraDevice cameraDevice, int i) {
             Log.e(getClass().getName(), "Camera Error Code: " + i);
+            displayCameraErrorMessage("Camera state errored with code " + i);
             closeCamera();
         }
     }

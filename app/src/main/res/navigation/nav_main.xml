@@ -7,11 +7,11 @@
     <fragment
         android:id="@+id/console"
         android:name="com.mitchtalmadge.multicasttester.console.ConsoleFragment"
-        android:label="Console"
+        android:label="@string/menu_item_console_title"
         tools:layout="@layout/fragment_console" />
     <fragment
         android:id="@+id/stream"
         android:name="com.mitchtalmadge.multicasttester.StreamFragment"
-        android:label="Stream"
+        android:label="@string/menu_item_stream_title"
         tools:layout="@layout/fragment_stream" />
 </navigation>
