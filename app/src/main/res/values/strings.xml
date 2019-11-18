@@ -13,4 +13,9 @@
     <string name="stop_listening">Stop Listening</string>
     <string name="connectivity_lost">Internet connectivity has been lost. Listening has stopped.</string>
     <string name="wifi_connection_required">WiFi Connection Required</string>
+    <string name="camera_permission_required">Camera Permission Required</string>
+    <string name="camera_permission_instructions">Tap \'Start Streaming\', then accept the permission when requested.</string>
+    <string name="stop_streaming">Stop Streaming</string>
+    <string name="camera_error">Camera Error</string>
+    <string name="camera_error_info">Something went wrong when accessing the camera. Check if another app is currently using the camera. The error message is:</string>
 </resources>
