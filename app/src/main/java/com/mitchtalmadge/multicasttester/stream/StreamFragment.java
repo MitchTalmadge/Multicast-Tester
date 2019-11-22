@@ -156,7 +156,8 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
             StreamConfigurationMap streamConfigurationMap = cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 
             int displayRotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
-            Integer sensorOrientation = cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+            int sensorOrientation = Objects.requireNonNull(cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION));
+
             swapPreviewDimensions = false;
             switch(displayRotation) {
                 case Surface.ROTATION_0:
@@ -240,9 +241,9 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
         int displayH;
         if (resW > resH) {
             displayW = cameraRegion.getWidth();
-            displayH = cameraRegion.getWidth() / (resW / resH);
+            displayH = cameraRegion.getWidth() * resH / resW;
         } else {
-            displayW = cameraRegion.getHeight() / (resH / resW);
+            displayW = cameraRegion.getHeight() * resW / resH;
             displayH = cameraRegion.getHeight();
         }
         Log.v(getClass().getName(), "Setting preview dimensions to (" + displayW + ", " + displayH + ")");
