@@ -11,7 +11,7 @@
         tools:layout="@layout/fragment_console" />
     <fragment
         android:id="@+id/stream"
-        android:name="com.mitchtalmadge.multicasttester.StreamFragment"
+        android:name="com.mitchtalmadge.multicasttester.stream.StreamFragment"
         android:label="@string/menu_item_stream_title"
         tools:layout="@layout/fragment_stream" />
 </navigation>

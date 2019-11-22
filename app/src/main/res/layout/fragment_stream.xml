@@ -9,7 +9,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context=".StreamFragment">
+    tools:context=".stream.StreamFragment">
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -48,81 +48,90 @@
         android:text="@string/start_streaming"
         app:icon="@drawable/ic_stream" />
 
-    <LinearLayout
-        android:id="@+id/cameraPlaceholder"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="10dp"
-        android:background="#eeeeee"
-        android:orientation="vertical"
-        android:padding="20dp">
-
-        <LinearLayout
-            android:id="@+id/cameraPermissionInstructions"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@string/camera_permission_required"
-                android:textSize="24sp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@string/camera_permission_instructions" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/cameraErrorDetails"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="start"
-                    android:text="@string/camera_error"
-                    android:textSize="24sp"
-                    android:drawableStart="@drawable/ic_error"
-                    android:drawablePadding="10dp"
-                    android:drawableTint="@android:color/tertiary_text_dark"/>
-            </LinearLayout>
-
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_marginTop="10dp"
-                android:text="@string/camera_error_info" />
-
-            <TextView
-                android:id="@+id/cameraErrorLabel"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_marginTop="10dp"/>
-        </LinearLayout>
-    </LinearLayout>
-
-    <TextureView
-        android:id="@+id/cameraTexture"
+    <FrameLayout
+        android:id="@+id/cameraRegion"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="20dp"
-        android:visibility="gone" />
+        android:background="#eeeeee">
+
+        <LinearLayout
+            android:id="@+id/cameraPlaceholder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#eeeeee"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <LinearLayout
+                android:id="@+id/cameraPermissionInstructions"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/camera_permission_required"
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/camera_permission_instructions" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/cameraErrorDetails"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawableStart="@drawable/ic_error"
+                        android:drawablePadding="10dp"
+                        android:drawableTint="@android:color/tertiary_text_dark"
+                        android:gravity="start"
+                        android:text="@string/camera_error"
+                        android:textSize="24sp" />
+                </LinearLayout>
+
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:gravity="center"
+                    android:text="@string/camera_error_info" />
+
+                <TextView
+                    android:id="@+id/cameraErrorLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:gravity="center" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <com.mitchtalmadge.multicasttester.stream.AutoFitTextureView
+            android:id="@+id/cameraTexture"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_margin="10dp"
+            android:visibility="gone" />
+    </FrameLayout>
 
 </LinearLayout>

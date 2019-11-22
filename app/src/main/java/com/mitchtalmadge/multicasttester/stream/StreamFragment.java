@@ -1,4 +1,4 @@
-package com.mitchtalmadge.multicasttester;
+package com.mitchtalmadge.multicasttester.stream;
 
 import android.Manifest;
 import android.content.Context;
@@ -22,6 +22,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -32,6 +33,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
+import com.mitchtalmadge.multicasttester.R;
 
 import java.util.Collections;
 import java.util.Objects;
@@ -43,17 +45,19 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
     private TextView ipField;
     private TextView portField;
     private MaterialButton startStreamingButton;
+    private FrameLayout cameraRegion;
     private LinearLayout cameraPlaceholder;
     private LinearLayout cameraPermissionInstructions;
     private LinearLayout cameraErrorDetails;
     private TextView cameraErrorLabel;
-    private TextureView cameraTexture;
+    private AutoFitTextureView cameraTexture;
 
     private boolean cameraTextureAvailable = false;
 
     private boolean isStreaming = false;
     private CameraDevice cameraDevice;
     private Size cameraOutputSize;
+    private boolean swapPreviewDimensions = false;
 
     @Nullable
     @Override
@@ -63,6 +67,7 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
         ipField = view.findViewById(R.id.ipField);
         portField = view.findViewById(R.id.portField);
         startStreamingButton = view.findViewById(R.id.startStreamingButton);
+        cameraRegion = view.findViewById(R.id.cameraRegion);
         cameraPlaceholder = view.findViewById(R.id.cameraPlaceholder);
         cameraPermissionInstructions = view.findViewById(R.id.cameraPermissionInstructions);
         cameraErrorDetails = view.findViewById(R.id.cameraErrorDetails);
@@ -150,6 +155,24 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
             CameraCharacteristics cameraCharacteristics = cameraManager.getCameraCharacteristics(cameraId);
             StreamConfigurationMap streamConfigurationMap = cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 
+            int displayRotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
+            Integer sensorOrientation = cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+            swapPreviewDimensions = false;
+            switch(displayRotation) {
+                case Surface.ROTATION_0:
+                case Surface.ROTATION_180:
+                    if (sensorOrientation == 90 || sensorOrientation == 270) {
+                        swapPreviewDimensions = true;
+                    }
+                    break;
+                case Surface.ROTATION_90:
+                case Surface.ROTATION_270:
+                    if (sensorOrientation == 0 || sensorOrientation == 180) {
+                        swapPreviewDimensions = true;
+                    }
+                    break;
+            }
+
             cameraOutputSize = Objects.requireNonNull(streamConfigurationMap).getOutputSizes(SurfaceTexture.class)[0];
 
             cameraManager.openCamera(cameraId, new CameraStateCallback(), null);
@@ -199,9 +222,40 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
         cameraPlaceholder.setVisibility(View.GONE);
     }
 
+    /**
+     * Scale the camera preview to fit the specified camera resolution without distortion.
+     *
+     * @param resW The width of the camera resolution.
+     * @param resH The height of the camera resolution.
+     */
+    private void scaleCameraPreview(int resW, int resH) {
+        if(swapPreviewDimensions) {
+            int tempD = resW;
+            resW = resH;
+            resH = tempD;
+        }
+
+        Log.v(getClass().getName(), "Scaling with camera dimensions (" + resW + ", " + resH + ")");
+        int displayW;
+        int displayH;
+        if (resW > resH) {
+            displayW = cameraRegion.getWidth();
+            displayH = cameraRegion.getWidth() / (resW / resH);
+        } else {
+            displayW = cameraRegion.getHeight() / (resH / resW);
+            displayH = cameraRegion.getHeight();
+        }
+        Log.v(getClass().getName(), "Setting preview dimensions to (" + displayW + ", " + displayH + ")");
+        cameraTexture.setAspectRatio(displayW, displayH);
+    }
+
     private void createCameraPreview() {
+        if(cameraDevice == null)
+            return;
+
         displayCameraPreview();
         try {
+            scaleCameraPreview(cameraOutputSize.getWidth(), cameraOutputSize.getHeight());
             SurfaceTexture cameraSurfaceTexture = cameraTexture.getSurfaceTexture();
             cameraSurfaceTexture.setDefaultBufferSize(cameraOutputSize.getWidth(), cameraOutputSize.getHeight());
             Surface cameraSurface = new Surface(cameraSurfaceTexture);
@@ -293,17 +347,21 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
 
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i, int i1) {
+            Log.v(getClass().getName(), "Preview surface available with size (" + i + ", " + i1 + ")");
             cameraTextureAvailable = true;
             openCamera(false);
         }
 
         @Override
         public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int i, int i1) {
-
+            Log.v(getClass().getName(), "Preview surface size changed to (" + i + ", " + i1 + ")");
+            closeCamera();
+            openCamera(false);
         }
 
         @Override
         public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
+            Log.v(getClass().getName(), "Preview surface destroyed.");
             cameraTextureAvailable = false;
             closeCamera();
             return true;
