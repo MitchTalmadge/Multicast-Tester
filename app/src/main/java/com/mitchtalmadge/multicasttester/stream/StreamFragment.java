@@ -14,6 +14,8 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.text.SpannableString;
 import android.util.Log;
 import android.util.Size;
@@ -56,6 +58,9 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
 
     private boolean isStreaming = false;
     private CameraDevice cameraDevice;
+    private HandlerThread cameraBackgroundThread;
+    private Handler cameraBackgroundHandler;
+
     private Size cameraOutputSize;
     private boolean swapPreviewDimensions = false;
 
@@ -125,6 +130,24 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
         }
     }
 
+    private void startCameraBackgroundThread() {
+        cameraBackgroundThread = new HandlerThread("CameraBackground");
+        cameraBackgroundThread.start();
+        cameraBackgroundHandler = new Handler(cameraBackgroundThread.getLooper());
+    }
+
+    private void stopCameraBackgroundThread() {
+        cameraBackgroundThread.quitSafely();
+        try {
+            cameraBackgroundThread.join();
+        } catch (InterruptedException e) {
+            Log.e(getClass().getName(), "Interrupted while stopping camera background thread.", e);
+        }
+
+        cameraBackgroundThread = null;
+        cameraBackgroundHandler = null;
+    }
+
     /**
      * Attempts to open the camera and later display a preview.
      *
@@ -148,6 +171,7 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
             return false;
         }
 
+        startCameraBackgroundThread();
         CameraManager cameraManager = (CameraManager) Objects.requireNonNull(getActivity()).getSystemService(Context.CAMERA_SERVICE);
 
         try {
@@ -159,7 +183,7 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
             int sensorOrientation = Objects.requireNonNull(cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION));
 
             swapPreviewDimensions = false;
-            switch(displayRotation) {
+            switch (displayRotation) {
                 case Surface.ROTATION_0:
                 case Surface.ROTATION_180:
                     if (sensorOrientation == 90 || sensorOrientation == 270) {
@@ -176,7 +200,7 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
 
             cameraOutputSize = Objects.requireNonNull(streamConfigurationMap).getOutputSizes(SurfaceTexture.class)[0];
 
-            cameraManager.openCamera(cameraId, new CameraStateCallback(), null);
+            cameraManager.openCamera(cameraId, new CameraStateCallback(), cameraBackgroundHandler);
 
             return true;
         } catch (CameraAccessException e) {
@@ -190,6 +214,7 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
     private void closeCamera() {
         if (cameraDevice != null) {
             cameraDevice.close();
+            stopCameraBackgroundThread();
             cameraDevice = null;
         }
 
@@ -231,7 +256,7 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
      */
     private void scaleCameraPreview(int resW, int resH) {
         Log.v(getClass().getName(), "Scaling with camera dimensions (" + resW + ", " + resH + ")");
-        if(swapPreviewDimensions) {
+        if (swapPreviewDimensions) {
             Log.v(getClass().getName(), "Using swapped camera dimensions");
             int tempD = resW;
             resW = resH;
@@ -242,12 +267,12 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
     }
 
     private void createCameraPreview() {
-        if(cameraDevice == null)
+        if (cameraDevice == null)
             return;
 
         displayCameraPreview();
         try {
-            scaleCameraPreview(cameraOutputSize.getWidth(), cameraOutputSize.getHeight());
+            Objects.requireNonNull(getActivity()).runOnUiThread(() -> scaleCameraPreview(cameraOutputSize.getWidth(), cameraOutputSize.getHeight()));
             SurfaceTexture cameraSurfaceTexture = cameraTexture.getSurfaceTexture();
             cameraSurfaceTexture.setDefaultBufferSize(cameraOutputSize.getWidth(), cameraOutputSize.getHeight());
             Surface cameraSurface = new Surface(cameraSurfaceTexture);
@@ -279,7 +304,7 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
     private void updateCameraPreview(CameraCaptureSession cameraCaptureSession, CaptureRequest.Builder captureRequestBuilder) {
         captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
         try {
-            cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, null);
+            cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, cameraBackgroundHandler);
         } catch (CameraAccessException e) {
             Log.e(getClass().getName(), "Camera preview update failed", e);
             displayCameraErrorMessage(e.getMessage());
@@ -347,8 +372,6 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
         @Override
         public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int i, int i1) {
             Log.v(getClass().getName(), "Preview surface size changed to (" + i + ", " + i1 + ")");
-            closeCamera();
-            openCamera(false);
         }
 
         @Override
