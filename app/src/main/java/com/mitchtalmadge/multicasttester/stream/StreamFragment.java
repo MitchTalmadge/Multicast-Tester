@@ -230,24 +230,15 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
      * @param resH The height of the camera resolution.
      */
     private void scaleCameraPreview(int resW, int resH) {
+        Log.v(getClass().getName(), "Scaling with camera dimensions (" + resW + ", " + resH + ")");
         if(swapPreviewDimensions) {
+            Log.v(getClass().getName(), "Using swapped camera dimensions");
             int tempD = resW;
             resW = resH;
             resH = tempD;
         }
 
-        Log.v(getClass().getName(), "Scaling with camera dimensions (" + resW + ", " + resH + ")");
-        int displayW;
-        int displayH;
-        if (resW > resH) {
-            displayW = cameraRegion.getWidth();
-            displayH = cameraRegion.getWidth() * resH / resW;
-        } else {
-            displayW = cameraRegion.getHeight() * resW / resH;
-            displayH = cameraRegion.getHeight();
-        }
-        Log.v(getClass().getName(), "Setting preview dimensions to (" + displayW + ", " + displayH + ")");
-        cameraTexture.setAspectRatio(displayW, displayH);
+        cameraTexture.setAspectRatio(resW, resH);
     }
 
     private void createCameraPreview() {
