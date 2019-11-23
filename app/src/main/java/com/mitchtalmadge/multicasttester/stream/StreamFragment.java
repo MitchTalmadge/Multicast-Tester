@@ -13,6 +13,9 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.media.MediaCodec;
+import android.media.MediaFormat;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -36,11 +39,20 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
 import com.mitchtalmadge.multicasttester.R;
+import com.mitchtalmadge.multicasttester.stream.rtp.MulticastRtpStreamHandler;
+import com.pedro.encoder.input.video.CameraHelper;
+import com.pedro.encoder.video.FormatVideoEncoder;
+import com.pedro.encoder.video.GetVideoData;
+import com.pedro.encoder.video.VideoEncoder;
 
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
-public class StreamFragment extends Fragment implements View.OnClickListener {
+public class StreamFragment extends Fragment implements View.OnClickListener, GetVideoData {
 
     private final static int PERMISSION_REQUEST_CAMERA_ID = 100;
 
@@ -57,7 +69,11 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
     private boolean cameraTextureAvailable = false;
 
     private boolean isStreaming = false;
+    private WifiManager.MulticastLock wifiMulticastLock;
+    private MulticastRtpStreamHandler multicastRtpStreamHandler;
+
     private CameraDevice cameraDevice;
+    private VideoEncoder videoEncoder;
     private HandlerThread cameraBackgroundThread;
     private Handler cameraBackgroundHandler;
 
@@ -78,6 +94,8 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
         cameraErrorDetails = view.findViewById(R.id.cameraErrorDetails);
         cameraErrorLabel = view.findViewById(R.id.cameraErrorLabel);
         cameraTexture = view.findViewById(R.id.cameraTexture);
+
+        multicastRtpStreamHandler = new MulticastRtpStreamHandler();
 
         startStreamingButton.setOnClickListener(this);
         cameraTexture.setSurfaceTextureListener(new CameraSurfaceTextureListener());
@@ -115,19 +133,42 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
     }
 
     private void startStreaming() {
-        if (!this.isStreaming) {
-            this.isStreaming = true;
-            this.startStreamingButton.setText(R.string.stop_streaming);
-            this.startStreamingButton.setIcon(ContextCompat.getDrawable(Objects.requireNonNull(getActivity()).getApplicationContext(), R.drawable.ic_stream_stop));
-        }
+        if (isStreaming)
+            return;
+
+        acquireWifiMulticastLock();
+        multicastRtpStreamHandler.connect(ipField.getText().toString(), portField.getText().toString(), getContext());
+
+        isStreaming = true;
+        startStreamingButton.setText(R.string.stop_streaming);
+        startStreamingButton.setIcon(ContextCompat.getDrawable(Objects.requireNonNull(getActivity()).getApplicationContext(), R.drawable.ic_stream_stop));
     }
 
     private void stopStreaming() {
-        if (this.isStreaming) {
-            this.isStreaming = false;
-            this.startStreamingButton.setText(R.string.start_streaming);
-            this.startStreamingButton.setIcon(ContextCompat.getDrawable(Objects.requireNonNull(getActivity()).getApplicationContext(), R.drawable.ic_stream));
+        if (!isStreaming)
+            return;
+
+        multicastRtpStreamHandler.disconnect();
+        releaseWifiMulticastLock();
+
+        isStreaming = false;
+        startStreamingButton.setText(R.string.start_streaming);
+        startStreamingButton.setIcon(ContextCompat.getDrawable(Objects.requireNonNull(getActivity()).getApplicationContext(), R.drawable.ic_stream));
+    }
+
+    private void acquireWifiMulticastLock() {
+        releaseWifiMulticastLock();
+
+        WifiManager wifi = (WifiManager) Objects.requireNonNull(getActivity()).getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        if (wifi != null) {
+            wifiMulticastLock = wifi.createMulticastLock("MulticastTester");
+            wifiMulticastLock.acquire();
         }
+    }
+
+    private void releaseWifiMulticastLock() {
+        if (wifiMulticastLock != null && wifiMulticastLock.isHeld())
+            wifiMulticastLock.release();
     }
 
     private void startCameraBackgroundThread() {
@@ -199,6 +240,17 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
             }
 
             cameraOutputSize = Objects.requireNonNull(streamConfigurationMap).getOutputSizes(SurfaceTexture.class)[0];
+
+            videoEncoder = new VideoEncoder(this);
+            videoEncoder.prepareVideoEncoder(
+                    640,
+                    480,
+                    30,
+                    1200 * 1024,
+                    CameraHelper.getCameraOrientation(getContext()),
+                    swapPreviewDimensions,
+                    2,
+                    FormatVideoEncoder.SURFACE);
 
             cameraManager.openCamera(cameraId, new CameraStateCallback(), cameraBackgroundHandler);
 
@@ -277,36 +329,37 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
             cameraSurfaceTexture.setDefaultBufferSize(cameraOutputSize.getWidth(), cameraOutputSize.getHeight());
             Surface cameraSurface = new Surface(cameraSurfaceTexture);
 
+            cameraBackgroundHandler.post(() -> videoEncoder.start());
+
             CaptureRequest.Builder captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             captureRequestBuilder.addTarget(cameraSurface);
-            cameraDevice.createCaptureSession(Collections.singletonList(cameraSurface), new CameraCaptureSession.StateCallback() {
+            captureRequestBuilder.addTarget(videoEncoder.getInputSurface());
+            cameraDevice.createCaptureSession(Arrays.asList(cameraSurface, videoEncoder.getInputSurface()), new CameraCaptureSession.StateCallback() {
                 @Override
                 public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
                     if (cameraDevice == null) {
                         return;
                     }
 
-                    updateCameraPreview(cameraCaptureSession, captureRequestBuilder);
+                    captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+                    try {
+                        cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, cameraBackgroundHandler);
+                    } catch (CameraAccessException e) {
+                        Log.e(getClass().getName(), "Could not create camera repeating request", e);
+                        displayCameraErrorMessage(e.getMessage());
+                        closeCamera();
+                    }
                 }
 
                 @Override
                 public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
                     Log.e(getClass().getName(), "Camera capture session configuration failed");
+                    displayCameraErrorMessage("Failed to configure camera capture session.");
+                    closeCamera();
                 }
             }, null);
         } catch (CameraAccessException e) {
             Log.e(getClass().getName(), "Could not create camera preview", e);
-            displayCameraErrorMessage(e.getMessage());
-            closeCamera();
-        }
-    }
-
-    private void updateCameraPreview(CameraCaptureSession cameraCaptureSession, CaptureRequest.Builder captureRequestBuilder) {
-        captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
-        try {
-            cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, cameraBackgroundHandler);
-        } catch (CameraAccessException e) {
-            Log.e(getClass().getName(), "Camera preview update failed", e);
             displayCameraErrorMessage(e.getMessage());
             closeCamera();
         }
@@ -336,6 +389,28 @@ public class StreamFragment extends Fragment implements View.OnClickListener {
                 }
             }
         }
+    }
+
+    @Override
+    public void onSpsPps(ByteBuffer sps, ByteBuffer pps) {
+        multicastRtpStreamHandler.setSpsPps(sps, pps);
+    }
+
+    @Override
+    public void onSpsPpsVps(ByteBuffer sps, ByteBuffer pps, ByteBuffer vps) {
+        multicastRtpStreamHandler.setSpsPps(sps, pps);
+    }
+
+    @Override
+    public void getVideoData(ByteBuffer h264Buffer, MediaCodec.BufferInfo info) {
+        if (!isStreaming)
+            return;
+        multicastRtpStreamHandler.writeH264Data(h264Buffer, info);
+    }
+
+    @Override
+    public void onVideoFormat(MediaFormat mediaFormat) {
+
     }
 
     private class CameraStateCallback extends CameraDevice.StateCallback {

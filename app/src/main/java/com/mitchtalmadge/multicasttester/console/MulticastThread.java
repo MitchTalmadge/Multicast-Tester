@@ -12,6 +12,8 @@ import java.net.BindException;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 class MulticastThread extends Thread {
@@ -38,16 +40,19 @@ class MulticastThread extends Thread {
         try {
             WifiManager wifiManager = (WifiManager) fragment.getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+
             int wifiIPInt = wifiInfo.getIpAddress();
-            byte[] wifiIPByte = new byte[]{
-                    (byte) (wifiIPInt & 0xff),
-                    (byte) (wifiIPInt >> 8 & 0xff),
-                    (byte) (wifiIPInt >> 16 & 0xff),
-                    (byte) (wifiIPInt >> 24 & 0xff)};
-            this.inetAddress = InetAddress.getByAddress(wifiIPByte);
+            byte[] wifiIPBytes =
+                    ByteBuffer
+                            .allocate(4)
+                            .order(ByteOrder.LITTLE_ENDIAN)
+                            .putInt(wifiIPInt)
+                            .array();
+
+            inetAddress = InetAddress.getByAddress(wifiIPBytes);
             NetworkInterface networkInterface = NetworkInterface.getByInetAddress(inetAddress);
 
-            this.multicastSocket = new MulticastSocket(multicastPort);
+            multicastSocket = new MulticastSocket(multicastPort);
             multicastSocket.setNetworkInterface(networkInterface);
             multicastSocket.joinGroup(InetAddress.getByName(multicastIP));
             multicastSocket.setSoTimeout(100);
@@ -55,7 +60,7 @@ class MulticastThread extends Thread {
         } catch (BindException e) {
             handler.post(fragment::stopListening);
             String error = "Error: Cannot bind Address or Port.";
-            if (multicastPort < 1024)
+            if (multicastPort <= 1024)
                 error += "\nTry binding to a port larger than 1024.";
             outputErrorToConsole(error);
         } catch (IOException e) {
@@ -72,12 +77,7 @@ class MulticastThread extends Thread {
     }
 
     private void outputErrorToConsole(final String errorMessage) {
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                fragment.outputErrorToConsole(errorMessage);
-            }
-        });
+        handler.post(() -> fragment.outputErrorToConsole(errorMessage));
     }
 
     void stopRunning() {
