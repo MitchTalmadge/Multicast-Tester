@@ -27,6 +27,7 @@ public class MulticastDispatchThread extends Thread {
     private boolean running = true;
 
     private MulticastSocket multicastSocket;
+    private WifiManager.MulticastLock wifiMulticastLock;
     private ConcurrentLinkedQueue<RtpFrame> queue = new ConcurrentLinkedQueue<>();
 
     public MulticastDispatchThread(String ip, int port, Context context) {
@@ -34,6 +35,23 @@ public class MulticastDispatchThread extends Thread {
         this.ip = ip;
         this.port = port;
         this.context = context;
+
+        acquireWifiMulticastLock();
+    }
+
+    private void acquireWifiMulticastLock() {
+        releaseWifiMulticastLock();
+
+        WifiManager wifi = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        if (wifi != null) {
+            wifiMulticastLock = wifi.createMulticastLock("MulticastTester");
+            wifiMulticastLock.acquire();
+        }
+    }
+
+    private void releaseWifiMulticastLock() {
+        if (wifiMulticastLock != null && wifiMulticastLock.isHeld())
+            wifiMulticastLock.release();
     }
 
     @Override
@@ -57,7 +75,7 @@ public class MulticastDispatchThread extends Thread {
             multicastSocket.setNetworkInterface(networkInterface);
             multicastSocket.joinGroup(InetAddress.getByName(ip));
             multicastSocket.setSoTimeout(100);
-            multicastSocket.setTimeToLive(2);
+            multicastSocket.setTimeToLive(255);
 
             while (running) {
                 if (queue.isEmpty())
@@ -83,6 +101,12 @@ public class MulticastDispatchThread extends Thread {
 
     public void stopGracefully() {
         running = false;
+        try {
+            join();
+        } catch (InterruptedException ignored) {
+        }
+
+        releaseWifiMulticastLock();
     }
 
 }

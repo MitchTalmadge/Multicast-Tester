@@ -69,7 +69,6 @@ public class StreamFragment extends Fragment implements View.OnClickListener, Ge
     private boolean cameraTextureAvailable = false;
 
     private boolean isStreaming = false;
-    private WifiManager.MulticastLock wifiMulticastLock;
     private MulticastRtpStreamHandler multicastRtpStreamHandler;
 
     private CameraDevice cameraDevice;
@@ -133,10 +132,10 @@ public class StreamFragment extends Fragment implements View.OnClickListener, Ge
     }
 
     private void startStreaming() {
+        Log.v(getClass().getName(), "Starting streaming...");
         if (isStreaming)
             return;
 
-        acquireWifiMulticastLock();
         multicastRtpStreamHandler.connect(ipField.getText().toString(), portField.getText().toString(), getContext());
 
         isStreaming = true;
@@ -145,30 +144,15 @@ public class StreamFragment extends Fragment implements View.OnClickListener, Ge
     }
 
     private void stopStreaming() {
+        Log.v(getClass().getName(), "Stopping streaming...");
         if (!isStreaming)
             return;
 
         multicastRtpStreamHandler.disconnect();
-        releaseWifiMulticastLock();
 
         isStreaming = false;
         startStreamingButton.setText(R.string.start_streaming);
         startStreamingButton.setIcon(ContextCompat.getDrawable(Objects.requireNonNull(getActivity()).getApplicationContext(), R.drawable.ic_stream));
-    }
-
-    private void acquireWifiMulticastLock() {
-        releaseWifiMulticastLock();
-
-        WifiManager wifi = (WifiManager) Objects.requireNonNull(getActivity()).getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        if (wifi != null) {
-            wifiMulticastLock = wifi.createMulticastLock("MulticastTester");
-            wifiMulticastLock.acquire();
-        }
-    }
-
-    private void releaseWifiMulticastLock() {
-        if (wifiMulticastLock != null && wifiMulticastLock.isHeld())
-            wifiMulticastLock.release();
     }
 
     private void startCameraBackgroundThread() {
@@ -196,16 +180,23 @@ public class StreamFragment extends Fragment implements View.OnClickListener, Ge
      * @return Whether the camera was opened.
      */
     private boolean openCamera(boolean requestPermission) {
+        Log.v(getClass().getName(), "Opening camera...");
+
         // Don't open again if already open.
-        if (cameraDevice != null)
+        if (cameraDevice != null) {
+            Log.v(getClass().getName(), "Camera already open.");
             return true;
+        }
 
         // We need a texture to use the camera.
-        if (!cameraTextureAvailable)
+        if (!cameraTextureAvailable) {
+            Log.v(getClass().getName(), "Camera texture not available.");
             return false;
+        }
 
         // Check permission and request if needed.
         if (ActivityCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            Log.v(getClass().getName(), "Camera permissions not granted yet.");
             displayCameraPermissionInstructions();
             if (requestPermission)
                 requestPermissions(new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA_ID);
@@ -243,10 +234,10 @@ public class StreamFragment extends Fragment implements View.OnClickListener, Ge
 
             videoEncoder = new VideoEncoder(this);
             videoEncoder.prepareVideoEncoder(
-                    640,
-                    480,
+                    1280,
+                    720,
                     30,
-                    1200 * 1024,
+                    2_000,
                     CameraHelper.getCameraOrientation(getContext()),
                     swapPreviewDimensions,
                     2,
@@ -264,8 +255,10 @@ public class StreamFragment extends Fragment implements View.OnClickListener, Ge
     }
 
     private void closeCamera() {
+        Log.v(getClass().getName(), "Closing camera...");
         if (cameraDevice != null) {
             cameraDevice.close();
+            videoEncoder.stop();
             stopCameraBackgroundThread();
             cameraDevice = null;
         }
@@ -346,7 +339,8 @@ public class StreamFragment extends Fragment implements View.OnClickListener, Ge
                         cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, cameraBackgroundHandler);
                     } catch (CameraAccessException e) {
                         Log.e(getClass().getName(), "Could not create camera repeating request", e);
-                        displayCameraErrorMessage(e.getMessage());
+                        Objects.requireNonNull(getActivity()).runOnUiThread(() ->
+                                displayCameraErrorMessage(e.getMessage()));
                         closeCamera();
                     }
                 }
@@ -354,10 +348,11 @@ public class StreamFragment extends Fragment implements View.OnClickListener, Ge
                 @Override
                 public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
                     Log.e(getClass().getName(), "Camera capture session configuration failed");
-                    displayCameraErrorMessage("Failed to configure camera capture session.");
+                    Objects.requireNonNull(getActivity()).runOnUiThread(() ->
+                            displayCameraErrorMessage("Failed to configure camera capture session."));
                     closeCamera();
                 }
-            }, null);
+            }, cameraBackgroundHandler);
         } catch (CameraAccessException e) {
             Log.e(getClass().getName(), "Could not create camera preview", e);
             displayCameraErrorMessage(e.getMessage());
@@ -430,7 +425,8 @@ public class StreamFragment extends Fragment implements View.OnClickListener, Ge
         @Override
         public void onError(@NonNull CameraDevice cameraDevice, int i) {
             Log.e(getClass().getName(), "Camera Error Code: " + i);
-            displayCameraErrorMessage("Camera state errored with code " + i);
+            Objects.requireNonNull(getActivity()).runOnUiThread(() ->
+                    displayCameraErrorMessage("Camera state errored with code " + i));
             closeCamera();
         }
     }
