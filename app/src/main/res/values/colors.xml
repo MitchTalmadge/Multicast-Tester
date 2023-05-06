@@ -3,4 +3,6 @@
     <color name="colorPrimary">#efefef</color>
     <color name="colorPrimaryDark">#666666</color>
     <color name="colorAccent">#0078ff</color>
+    <color name="startListeningButtonColor">#0078ff</color>
+    <color name="stopListeningButtonColor">#ff0000</color>
 </resources>

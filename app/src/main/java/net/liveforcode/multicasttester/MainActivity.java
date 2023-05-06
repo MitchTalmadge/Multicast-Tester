@@ -4,11 +4,12 @@ import android.content.Context;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
-import android.net.Network;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -196,7 +197,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateButtonStates() {
-        ((Button) findViewById(R.id.startListeningButton)).setText((isListening) ? R.string.stop_listening : R.string.start_listening);
+        Button startListeningButton = ((Button) findViewById(R.id.startListeningButton));
+        startListeningButton.setText(isListening ? R.string.stop_listening : R.string.start_listening);
+        startListeningButton.setBackgroundTintList(ContextCompat.getColorStateList(this, isListening ? R.color.stopListeningButtonColor : R.color.startListeningButtonColor));
+        startListeningButton.setOutlineSpotShadowColor(ContextCompat.getColor(this, isListening ? R.color.stopListeningButtonColor : R.color.startListeningButtonColor));
         findViewById(R.id.sendMessageButton).setEnabled(isListening);
     }
 
