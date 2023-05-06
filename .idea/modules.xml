@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Multicast-Tester.iml" filepath="$PROJECT_DIR$/Multicast-Tester.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Multicast-Tester.iml" filepath="$PROJECT_DIR$/.idea/modules/Multicast-Tester.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Multicast-Tester.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Multicast-Tester.app.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Multicast-Tester.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Multicast-Tester.app.androidTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Multicast-Tester.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Multicast-Tester.app.main.iml" />

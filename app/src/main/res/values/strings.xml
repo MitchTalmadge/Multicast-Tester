@@ -1,15 +1,16 @@
 <resources>
+    <string name="activity_console_label">Console</string>
     <string name="app_name">Multicast Tester</string>
-
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
-    <string name="start_listening">Start Listening</string>
-    <string name="stop_listening">Stop Listening</string>
-    <string name="multicast_ip_hint">Multicast IP</string>
-    <string name="multicast_port_hint">Port</string>
+    <string name="clear_console">Clear Console</string>
     <string name="console">Console</string>
     <string name="message_to_send">Message to Send</string>
-    <string name="clear_console">Clear Console</string>
-    <string name="send_message">Send Message</string>
+    <string name="multicast_ip_hint">Multicast IP</string>
+    <string name="multicast_port_hint">Port</string>
     <string name="receive_in_hexadecimal">Receive in Hexadecimal</string>
+    <string name="send_message">Send Message</string>
+    <string name="start_listening">Start Listening</string>
+    <string name="start_streaming">Start Streaming</string>
+    <string name="stop_listening">Stop Listening</string>
+    <string name="connectivity_lost">Internet connectivity has been lost. Listening has stopped.</string>
+    <string name="wifi_connection_required">WiFi Connection Required</string>
 </resources>
