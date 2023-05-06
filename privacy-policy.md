@@ -1,1 +1,1 @@
-Multicast Tester does not collect or store any personal information. The packets captured are stored only in memory, so that they can be showed on the screen, until you close the app -- and then they are gone.
+Multicast Tester does not collect or store any personal information. The packets captured are stored only in memory, so that they can be showed on the screen, until you close the app or clear the screen -- and then they are gone.
